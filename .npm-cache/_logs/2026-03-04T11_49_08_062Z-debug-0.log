@@ -1,0 +1,379 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@11.6.2
+2 info using node@v24.13.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/macbookpro/Desktop/experiment/.npmrc
+5 silly config load:file:/Users/macbookpro/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm create vite@latest frontend --template react-ts
+8 verbose argv "create" "vite@latest" "frontend" "--" "--template" "react-ts"
+9 verbose logfile logs-max:10 dir:/Users/macbookpro/Desktop/experiment/.npm-cache/_logs/2026-03-04T11_49_08_062Z-
+10 verbose logfile /Users/macbookpro/Desktop/experiment/.npm-cache/_logs/2026-03-04T11_49_08_062Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 http fetch GET 200 https://registry.npmjs.org/create-vite 950ms (cache miss)
+14 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+15 warn exec The following package was not found and will be installed: create-vite@8.3.0
+16 silly idealTree buildDeps
+17 silly fetch manifest create-vite@8.3.0
+18 silly packumentCache full:https://registry.npmjs.org/create-vite cache-miss
+19 http fetch GET 200 https://registry.npmjs.org/create-vite 428ms (cache miss)
+20 silly packumentCache full:https://registry.npmjs.org/create-vite set size:undefined disposed:false
+21 silly placeDep ROOT create-vite@8.3.0 OK for:  want: 8.3.0
+22 silly reify moves {}
+23 silly audit bulk request { 'create-vite': [ '8.3.0' ] }
+24 http cache create-vite@https://registry.npmjs.org/create-vite/-/create-vite-8.3.0.tgz 0ms (cache hit)
+25 silly tarball no local data for create-vite@https://registry.npmjs.org/create-vite/-/create-vite-8.3.0.tgz. Extracting by manifest.
+26 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 225ms
+27 silly audit report {}
+28 warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte-ts/.vscode'
+29 silly tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte-ts/.vscode' [Error: ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte-ts/.vscode'] {
+29 silly tar   errno: -2,
+29 silly tar   code: 'ENOENT',
+29 silly tar   syscall: 'lstat',
+29 silly tar   path: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte-ts/.vscode',
+29 silly tar   entry: ReadEntry {
+29 silly tar     _events: [Object: null prototype] { end: [Function (anonymous)] },
+29 silly tar     _eventsCount: 1,
+29 silly tar     _maxListeners: undefined,
+29 silly tar     writable: false,
+29 silly tar     readable: true,
+29 silly tar     extended: undefined,
+29 silly tar     globalExtended: undefined,
+29 silly tar     header: Header {
+29 silly tar       cksumValid: true,
+29 silly tar       needPax: false,
+29 silly tar       nullBlock: false,
+29 silly tar       block: undefined,
+29 silly tar       path: 'package/template-svelte-ts/.vscode/extensions.json',
+29 silly tar       mode: 420,
+29 silly tar       uid: 0,
+29 silly tar       gid: 0,
+29 silly tar       size: 50,
+29 silly tar       cksum: 8712,
+29 silly tar       linkpath: '',
+29 silly tar       uname: '',
+29 silly tar       gname: '',
+29 silly tar       devmaj: 0,
+29 silly tar       devmin: 0,
+29 silly tar       atime: undefined,
+29 silly tar       ctime: undefined,
+29 silly tar       mtime: 1985-10-26T08:15:00.000Z,
+29 silly tar       charset: undefined,
+29 silly tar       comment: undefined
+29 silly tar     },
+29 silly tar     startBlockSize: 512,
+29 silly tar     blockRemain: 0,
+29 silly tar     remain: 0,
+29 silly tar     type: 'File',
+29 silly tar     meta: false,
+29 silly tar     ignore: false,
+29 silly tar     path: 'template-svelte-ts/.vscode/extensions.json',
+29 silly tar     mode: 438,
+29 silly tar     uid: 0,
+29 silly tar     gid: 0,
+29 silly tar     uname: '',
+29 silly tar     gname: '',
+29 silly tar     size: 50,
+29 silly tar     mtime: 1985-10-26T08:15:00.000Z,
+29 silly tar     atime: undefined,
+29 silly tar     ctime: undefined,
+29 silly tar     linkpath: undefined,
+29 silly tar     dev: undefined,
+29 silly tar     ino: undefined,
+29 silly tar     nlink: undefined,
+29 silly tar     invalid: false,
+29 silly tar     absolute: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte-ts/.vscode/extensions.json',
+29 silly tar     unsupported: false,
+29 silly tar     Symbol(shapeMode): false,
+29 silly tar     Symbol(kCapture): false,
+29 silly tar     Symbol(flowing): false,
+29 silly tar     Symbol(paused): true,
+29 silly tar     Symbol(pipes): [],
+29 silly tar     Symbol(buffer): [
+29 silly tar       <Buffer 7b 0a 20 20 22 72 65 63 6f 6d 6d 65 6e 64 61 74 69 6f 6e 73 22 3a 20 5b 22 73 76 65 6c 74 65 2e 73 76 65 6c 74 65 2d 76 73 63 6f 64 65 22 5d 0a 7d 0a>
+29 silly tar     ],
+29 silly tar     Symbol(objectMode): false,
+29 silly tar     Symbol(encoding): null,
+29 silly tar     Symbol(async): false,
+29 silly tar     Symbol(decoder): null,
+29 silly tar     Symbol(EOF): true,
+29 silly tar     Symbol(emittedEnd): false,
+29 silly tar     Symbol(emittingEnd): false,
+29 silly tar     Symbol(closed): false,
+29 silly tar     Symbol(emittedError): null,
+29 silly tar     Symbol(bufferLength): 50,
+29 silly tar     Symbol(destroyed): false,
+29 silly tar     Symbol(signal): undefined,
+29 silly tar     Symbol(aborted): false,
+29 silly tar     Symbol(dataListeners): 0,
+29 silly tar     Symbol(discarded): false
+29 silly tar   },
+29 silly tar   cwd: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite',
+29 silly tar   tarCode: 'TAR_ENTRY_ERROR'
+29 silly tar }
+30 warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte/.vscode'
+31 silly tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte/.vscode' [Error: ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte/.vscode'] {
+31 silly tar   errno: -2,
+31 silly tar   code: 'ENOENT',
+31 silly tar   syscall: 'lstat',
+31 silly tar   path: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte/.vscode',
+31 silly tar   entry: ReadEntry {
+31 silly tar     _events: [Object: null prototype] { end: [Function (anonymous)] },
+31 silly tar     _eventsCount: 1,
+31 silly tar     _maxListeners: undefined,
+31 silly tar     writable: false,
+31 silly tar     readable: true,
+31 silly tar     extended: undefined,
+31 silly tar     globalExtended: undefined,
+31 silly tar     header: Header {
+31 silly tar       cksumValid: true,
+31 silly tar       needPax: false,
+31 silly tar       nullBlock: false,
+31 silly tar       block: undefined,
+31 silly tar       path: 'package/template-svelte/.vscode/extensions.json',
+31 silly tar       mode: 420,
+31 silly tar       uid: 0,
+31 silly tar       gid: 0,
+31 silly tar       size: 50,
+31 silly tar       cksum: 8436,
+31 silly tar       linkpath: '',
+31 silly tar       uname: '',
+31 silly tar       gname: '',
+31 silly tar       devmaj: 0,
+31 silly tar       devmin: 0,
+31 silly tar       atime: undefined,
+31 silly tar       ctime: undefined,
+31 silly tar       mtime: 1985-10-26T08:15:00.000Z,
+31 silly tar       charset: undefined,
+31 silly tar       comment: undefined
+31 silly tar     },
+31 silly tar     startBlockSize: 512,
+31 silly tar     blockRemain: 0,
+31 silly tar     remain: 0,
+31 silly tar     type: 'File',
+31 silly tar     meta: false,
+31 silly tar     ignore: false,
+31 silly tar     path: 'template-svelte/.vscode/extensions.json',
+31 silly tar     mode: 438,
+31 silly tar     uid: 0,
+31 silly tar     gid: 0,
+31 silly tar     uname: '',
+31 silly tar     gname: '',
+31 silly tar     size: 50,
+31 silly tar     mtime: 1985-10-26T08:15:00.000Z,
+31 silly tar     atime: undefined,
+31 silly tar     ctime: undefined,
+31 silly tar     linkpath: undefined,
+31 silly tar     dev: undefined,
+31 silly tar     ino: undefined,
+31 silly tar     nlink: undefined,
+31 silly tar     invalid: false,
+31 silly tar     absolute: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-svelte/.vscode/extensions.json',
+31 silly tar     unsupported: false,
+31 silly tar     Symbol(shapeMode): false,
+31 silly tar     Symbol(kCapture): false,
+31 silly tar     Symbol(flowing): false,
+31 silly tar     Symbol(paused): true,
+31 silly tar     Symbol(pipes): [],
+31 silly tar     Symbol(buffer): [
+31 silly tar       <Buffer 7b 0a 20 20 22 72 65 63 6f 6d 6d 65 6e 64 61 74 69 6f 6e 73 22 3a 20 5b 22 73 76 65 6c 74 65 2e 73 76 65 6c 74 65 2d 76 73 63 6f 64 65 22 5d 0a 7d 0a>
+31 silly tar     ],
+31 silly tar     Symbol(objectMode): false,
+31 silly tar     Symbol(encoding): null,
+31 silly tar     Symbol(async): false,
+31 silly tar     Symbol(decoder): null,
+31 silly tar     Symbol(EOF): true,
+31 silly tar     Symbol(emittedEnd): false,
+31 silly tar     Symbol(emittingEnd): false,
+31 silly tar     Symbol(closed): false,
+31 silly tar     Symbol(emittedError): null,
+31 silly tar     Symbol(bufferLength): 50,
+31 silly tar     Symbol(destroyed): false,
+31 silly tar     Symbol(signal): undefined,
+31 silly tar     Symbol(aborted): false,
+31 silly tar     Symbol(dataListeners): 0,
+31 silly tar     Symbol(discarded): false
+31 silly tar   },
+31 silly tar   cwd: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite',
+31 silly tar   tarCode: 'TAR_ENTRY_ERROR'
+31 silly tar }
+32 warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue-ts/.vscode'
+33 silly tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue-ts/.vscode' [Error: ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue-ts/.vscode'] {
+33 silly tar   errno: -2,
+33 silly tar   code: 'ENOENT',
+33 silly tar   syscall: 'lstat',
+33 silly tar   path: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue-ts/.vscode',
+33 silly tar   entry: ReadEntry {
+33 silly tar     _events: [Object: null prototype] { end: [Function (anonymous)] },
+33 silly tar     _eventsCount: 1,
+33 silly tar     _maxListeners: undefined,
+33 silly tar     writable: false,
+33 silly tar     readable: true,
+33 silly tar     extended: undefined,
+33 silly tar     globalExtended: undefined,
+33 silly tar     header: Header {
+33 silly tar       cksumValid: true,
+33 silly tar       needPax: false,
+33 silly tar       nullBlock: false,
+33 silly tar       block: undefined,
+33 silly tar       path: 'package/template-vue-ts/.vscode/extensions.json',
+33 silly tar       mode: 420,
+33 silly tar       uid: 0,
+33 silly tar       gid: 0,
+33 silly tar       size: 39,
+33 silly tar       cksum: 8392,
+33 silly tar       linkpath: '',
+33 silly tar       uname: '',
+33 silly tar       gname: '',
+33 silly tar       devmaj: 0,
+33 silly tar       devmin: 0,
+33 silly tar       atime: undefined,
+33 silly tar       ctime: undefined,
+33 silly tar       mtime: 1985-10-26T08:15:00.000Z,
+33 silly tar       charset: undefined,
+33 silly tar       comment: undefined
+33 silly tar     },
+33 silly tar     startBlockSize: 512,
+33 silly tar     blockRemain: 0,
+33 silly tar     remain: 0,
+33 silly tar     type: 'File',
+33 silly tar     meta: false,
+33 silly tar     ignore: false,
+33 silly tar     path: 'template-vue-ts/.vscode/extensions.json',
+33 silly tar     mode: 438,
+33 silly tar     uid: 0,
+33 silly tar     gid: 0,
+33 silly tar     uname: '',
+33 silly tar     gname: '',
+33 silly tar     size: 39,
+33 silly tar     mtime: 1985-10-26T08:15:00.000Z,
+33 silly tar     atime: undefined,
+33 silly tar     ctime: undefined,
+33 silly tar     linkpath: undefined,
+33 silly tar     dev: undefined,
+33 silly tar     ino: undefined,
+33 silly tar     nlink: undefined,
+33 silly tar     invalid: false,
+33 silly tar     absolute: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue-ts/.vscode/extensions.json',
+33 silly tar     unsupported: false,
+33 silly tar     Symbol(shapeMode): false,
+33 silly tar     Symbol(kCapture): false,
+33 silly tar     Symbol(flowing): false,
+33 silly tar     Symbol(paused): true,
+33 silly tar     Symbol(pipes): [],
+33 silly tar     Symbol(buffer): [
+33 silly tar       <Buffer 7b 0a 20 20 22 72 65 63 6f 6d 6d 65 6e 64 61 74 69 6f 6e 73 22 3a 20 5b 22 56 75 65 2e 76 6f 6c 61 72 22 5d 0a 7d 0a>
+33 silly tar     ],
+33 silly tar     Symbol(objectMode): false,
+33 silly tar     Symbol(encoding): null,
+33 silly tar     Symbol(async): false,
+33 silly tar     Symbol(decoder): null,
+33 silly tar     Symbol(EOF): true,
+33 silly tar     Symbol(emittedEnd): false,
+33 silly tar     Symbol(emittingEnd): false,
+33 silly tar     Symbol(closed): false,
+33 silly tar     Symbol(emittedError): null,
+33 silly tar     Symbol(bufferLength): 39,
+33 silly tar     Symbol(destroyed): false,
+33 silly tar     Symbol(signal): undefined,
+33 silly tar     Symbol(aborted): false,
+33 silly tar     Symbol(dataListeners): 0,
+33 silly tar     Symbol(discarded): false
+33 silly tar   },
+33 silly tar   cwd: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite',
+33 silly tar   tarCode: 'TAR_ENTRY_ERROR'
+33 silly tar }
+34 warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue/.vscode'
+35 silly tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue/.vscode' [Error: ENOENT: no such file or directory, lstat '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue/.vscode'] {
+35 silly tar   errno: -2,
+35 silly tar   code: 'ENOENT',
+35 silly tar   syscall: 'lstat',
+35 silly tar   path: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue/.vscode',
+35 silly tar   entry: ReadEntry {
+35 silly tar     _events: [Object: null prototype] { end: [Function (anonymous)] },
+35 silly tar     _eventsCount: 1,
+35 silly tar     _maxListeners: undefined,
+35 silly tar     writable: false,
+35 silly tar     readable: true,
+35 silly tar     extended: undefined,
+35 silly tar     globalExtended: undefined,
+35 silly tar     header: Header {
+35 silly tar       cksumValid: true,
+35 silly tar       needPax: false,
+35 silly tar       nullBlock: false,
+35 silly tar       block: undefined,
+35 silly tar       path: 'package/template-vue/.vscode/extensions.json',
+35 silly tar       mode: 420,
+35 silly tar       uid: 0,
+35 silly tar       gid: 0,
+35 silly tar       size: 39,
+35 silly tar       cksum: 8116,
+35 silly tar       linkpath: '',
+35 silly tar       uname: '',
+35 silly tar       gname: '',
+35 silly tar       devmaj: 0,
+35 silly tar       devmin: 0,
+35 silly tar       atime: undefined,
+35 silly tar       ctime: undefined,
+35 silly tar       mtime: 1985-10-26T08:15:00.000Z,
+35 silly tar       charset: undefined,
+35 silly tar       comment: undefined
+35 silly tar     },
+35 silly tar     startBlockSize: 512,
+35 silly tar     blockRemain: 0,
+35 silly tar     remain: 0,
+35 silly tar     type: 'File',
+35 silly tar     meta: false,
+35 silly tar     ignore: false,
+35 silly tar     path: 'template-vue/.vscode/extensions.json',
+35 silly tar     mode: 438,
+35 silly tar     uid: 0,
+35 silly tar     gid: 0,
+35 silly tar     uname: '',
+35 silly tar     gname: '',
+35 silly tar     size: 39,
+35 silly tar     mtime: 1985-10-26T08:15:00.000Z,
+35 silly tar     atime: undefined,
+35 silly tar     ctime: undefined,
+35 silly tar     linkpath: undefined,
+35 silly tar     dev: undefined,
+35 silly tar     ino: undefined,
+35 silly tar     nlink: undefined,
+35 silly tar     invalid: false,
+35 silly tar     absolute: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite/template-vue/.vscode/extensions.json',
+35 silly tar     unsupported: false,
+35 silly tar     Symbol(shapeMode): false,
+35 silly tar     Symbol(kCapture): false,
+35 silly tar     Symbol(flowing): false,
+35 silly tar     Symbol(paused): true,
+35 silly tar     Symbol(pipes): [],
+35 silly tar     Symbol(buffer): [
+35 silly tar       <Buffer 7b 0a 20 20 22 72 65 63 6f 6d 6d 65 6e 64 61 74 69 6f 6e 73 22 3a 20 5b 22 56 75 65 2e 76 6f 6c 61 72 22 5d 0a 7d 0a>
+35 silly tar     ],
+35 silly tar     Symbol(objectMode): false,
+35 silly tar     Symbol(encoding): null,
+35 silly tar     Symbol(async): false,
+35 silly tar     Symbol(decoder): null,
+35 silly tar     Symbol(EOF): true,
+35 silly tar     Symbol(emittedEnd): false,
+35 silly tar     Symbol(emittingEnd): false,
+35 silly tar     Symbol(closed): false,
+35 silly tar     Symbol(emittedError): null,
+35 silly tar     Symbol(bufferLength): 39,
+35 silly tar     Symbol(destroyed): false,
+35 silly tar     Symbol(signal): undefined,
+35 silly tar     Symbol(aborted): false,
+35 silly tar     Symbol(dataListeners): 0,
+35 silly tar     Symbol(discarded): false
+35 silly tar   },
+35 silly tar   cwd: '/Users/macbookpro/Desktop/experiment/.npm-cache/_npx/1415fee72ff6294b/node_modules/create-vite',
+35 silly tar   tarCode: 'TAR_ENTRY_ERROR'
+35 silly tar }
+36 http fetch GET 200 https://registry.npmjs.org/create-vite/-/create-vite-8.3.0.tgz 2373ms (cache miss)
+37 verbose cwd /Users/macbookpro/Desktop/experiment
+38 verbose os Darwin 24.6.0
+39 verbose node v24.13.0
+40 verbose npm  v11.6.2
+41 verbose exit 0
+42 info ok
