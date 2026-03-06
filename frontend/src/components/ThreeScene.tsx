@@ -133,13 +133,13 @@ const ITEM_CONFIGS: ItemPlacementConfig[] = [
     rotationY: Math.PI / 5,
   },
   {
-    modelPath: '/assets/models/2030_projecter_01.glb',
+    modelPath: '/assets/models/2030_projector_01.glb',
     position: [8, 2, 4.2],
     targetSize: 7.5,
     rotationY: Math.PI/2,
   },
   {
-    modelPath: '/assets/models/2030_projecter_02.glb',
+    modelPath: '/assets/models/2030_projector_02.glb',
     position: [-1.8, 1.02, 3.6],
     targetSize: 1.4,
     rotationY: Math.PI / 2,
@@ -158,6 +158,9 @@ type ItemVisual = {
   answered: boolean
   active: boolean
   baseY: number
+  futureModel: THREE.Object3D | null
+  transitioningToHistoric: boolean
+  hasSwitchedToHistoric: boolean
 }
 
 type SceneCore = {
@@ -185,6 +188,18 @@ const NO_GREEN_MODEL_PATHS = new Set([
   '/assets/models/2030_projecter_01.glb',
   '/assets/models/2030_projecter_02.glb',
 ])
+
+const HISTORIC_MODEL_BY_SLOT: Partial<Record<number, string>> = {
+  0: '/assets/models/1930_heating.glb',
+  1: '/assets/models/1930_handmade_coffee.glb',
+  3: '/assets/models/1930_bag.glb',
+  5: '/assets/models/1930_envelop.glb',
+  6: '/assets/models/1930_typewriter.glb',
+  7: '/assets/models/1930_radio.glb',
+  9: '/assets/models/1930_time_spray.glb',
+  14: '/assets/models/1930_matchstick.glb',
+  15: '/assets/models/1930_light.glb',
+}
 
 function fitModelToTarget(model: THREE.Object3D, targetSize = 1.1) {
   const box = new THREE.Box3().setFromObject(model)
@@ -433,15 +448,17 @@ export default function ThreeScene({
     room.receiveShadow = true
     scene.add(room)
 
+    const floorMaterial = new THREE.MeshStandardMaterial({
+      color: scenePreset === 'practice' ? 0x000000 : 0xffffff,
+      normalMap: scenePreset === 'practice' ? null : floorNormalMap,
+      normalScale: new THREE.Vector2(0.8, 0.8),
+      roughness: scenePreset === 'practice' ? 1 : 0.92,
+      metalness: 0.02,
+    })
+
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE),
-      new THREE.MeshStandardMaterial({
-        color: scenePreset === 'practice' ? 0x000000 : 0xffffff,
-        normalMap: scenePreset === 'practice' ? null : floorNormalMap,
-        normalScale: new THREE.Vector2(0.8, 0.8),
-        roughness: scenePreset === 'practice' ? 1 : 0.92,
-        metalness: 0.02,
-      }),
+      floorMaterial,
     )
     floor.rotation.x = -Math.PI / 2
     // Room box底面在 y=0，地板需要略高于它，否则会看到房间底面的墙纸贴图
@@ -567,6 +584,7 @@ export default function ThreeScene({
 
     const gltfLoader = new GLTFLoader()
     const modelCache = new Map<number, THREE.Object3D>()
+    const historicModelCache = new Map<number, THREE.Object3D>()
 
     const loadModelIntoVisual = async (visual: ItemVisual) => {
       const config = ITEM_CONFIGS[visual.slot]
@@ -634,6 +652,36 @@ export default function ThreeScene({
       }
     }
 
+    const loadHistoricModelIntoVisual = async (visual: ItemVisual) => {
+      if (scenePreset === 'practice') return
+      const config = ITEM_CONFIGS[visual.slot]
+      if (!config || visual.futureModel || visual.hasSwitchedToHistoric) return
+      const historicPath = HISTORIC_MODEL_BY_SLOT[visual.slot]
+      if (!historicPath) return
+
+      try {
+        let model = historicModelCache.get(visual.slot)
+        if (!model) {
+          const gltf = await gltfLoader.loadAsync(historicPath)
+          model = gltf.scene
+          historicModelCache.set(visual.slot, model)
+        }
+
+        if (!visualsById.has(visual.id)) return
+
+        const modelInstance = model.clone(true)
+        fitModelToTarget(modelInstance, config.targetSize * modelScaleMultiplier * GLOBAL_MODEL_SCALE)
+        modelInstance.rotation.y = config.rotationY
+        modelInstance.rotation.z = config.rotationZ ?? 0
+        modelInstance.scale.setScalar(0.001)
+        visual.root.add(modelInstance)
+        visual.futureModel = modelInstance
+        visual.transitioningToHistoric = true
+      } catch {
+        // ignore historic model load failure
+      }
+    }
+
     const createItemVisual = (item: SceneItem, slot: number) => {
       const config = ITEM_CONFIGS[slot]
       if (!config) return
@@ -683,6 +731,9 @@ export default function ThreeScene({
         answered: item.answered,
         active: false,
         baseY: y,
+        futureModel: null,
+        transitioningToHistoric: false,
+        hasSwitchedToHistoric: false,
       }
 
       visualsById.set(item.id, visual)
@@ -837,8 +888,56 @@ export default function ThreeScene({
           haloMat.opacity = 0.1 + pulse * 0.1
         }
 
+        if (visual.answered && !visual.futureModel && !visual.hasSwitchedToHistoric) {
+          void loadHistoricModelIntoVisual(visual)
+        }
+
+        if (visual.transitioningToHistoric && visual.clickable) {
+          const currentScale = visual.clickable.scale.x
+          const nextScale = Math.max(0.001, currentScale - delta * 2.8)
+          visual.clickable.scale.setScalar(nextScale)
+
+          if (visual.futureModel) {
+            const targetScale = 1
+            const histScale = Math.min(targetScale, visual.futureModel.scale.x + delta * 2.8)
+            visual.futureModel.scale.setScalar(histScale)
+
+            if (histScale >= targetScale && nextScale <= 0.02) {
+              visual.root.remove(visual.clickable)
+              visual.clickable.traverse((obj) => {
+                const mesh = obj as THREE.Mesh
+                if (!mesh.isMesh) return
+                mesh.geometry.dispose()
+                if (Array.isArray(mesh.material)) {
+                  mesh.material.forEach((m) => m.dispose())
+                } else {
+                  mesh.material.dispose()
+                }
+              })
+              visual.clickable = visual.futureModel
+              visual.futureModel = null
+              visual.emissiveMaterials = collectEmissiveMaterials(visual.clickable)
+              visual.transitioningToHistoric = false
+              visual.hasSwitchedToHistoric = true
+            }
+          }
+        }
+
         updateVisualAppearance(visual)
       })
+
+      const allAnswered =
+        scenePreset === 'default' &&
+        Array.from(visualsById.values())
+          .filter((visual) => !visual.id.startsWith(EXTRA_ITEM_ID_PREFIX)).length > 0 &&
+        Array.from(visualsById.values())
+          .filter((visual) => !visual.id.startsWith(EXTRA_ITEM_ID_PREFIX))
+          .every((visual) => visual.answered)
+
+      if (allAnswered) {
+        roomMaterial.emissiveIntensity = THREE.MathUtils.lerp(roomMaterial.emissiveIntensity, 0.28, 0.02)
+        floorMaterial.color.lerp(new THREE.Color('#252525'), 0.02)
+      }
 
       const activeIds = Array.from(visualsById.values())
         .filter((visual) => visual.active && !visual.id.startsWith(EXTRA_ITEM_ID_PREFIX))

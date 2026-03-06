@@ -73,123 +73,123 @@ const PRACTICE_FEEDBACK_TEXT = {
 
 const FORMAL_ITEMS: ItemQuestion[] = [
   {
+    id: 'nano-repair-spray',
+    name: '纳米修复喷雾',
+    question: '纳米修复喷雾（2030_time_spray.glb）最可能退行成哪一项？',
+    correctOptionId: 'B',
+    options: [
+      { id: 'A', label: 'A. 现代圆柱形运动水壶（visual）' },
+      { id: 'B', label: 'B. 老式马口铁气雾罐（spray）（narrative）' },
+      { id: 'C', label: 'C. 游乐场旋转木马（baseline 无关项）' },
+      { id: 'D', label: 'D. 带有发光液体的魔法药水瓶（semantic）' },
+    ],
+  },
+  {
     id: 'smart-speaker',
     name: '智能音箱',
-    question: '如果这个智能音箱退行到 1960 年代，它最可能变成什么？',
+    question: '智能音箱（2030_soundbox.glb）最可能退行成哪一项？',
+    correctOptionId: 'D',
+    options: [
+      { id: 'A', label: 'A. 现代头戴式无线耳机（semantic）' },
+      { id: 'B', label: 'B. 木质复古相框（baseline 无关项）' },
+      { id: 'C', label: 'C. 表面光滑的深灰色圆石（visual）' },
+      { id: 'D', label: 'D. 大喇叭铜质留声机（narrative）' },
+    ],
+  },
+  {
+    id: 'holographic-projector',
+    name: '全息投影仪',
+    question: '全息投影仪（2030_projector_02.glb）最可能退行成哪一项？',
+    correctOptionId: 'A',
+    options: [
+      { id: 'A', label: 'A. 古董幻灯机（narrative）' },
+      { id: 'B', label: 'B. 铁制家用剪刀（baseline 无关项）' },
+      { id: 'C', label: 'C. 现代极简透明玻璃立方体/花瓶（visual）' },
+      { id: 'D', label: 'D. 宽屏超薄液晶显示器（semantic）' },
+    ],
+  },
+  {
+    id: 'smart-environment-lamp',
+    name: '智能环境灯',
+    question: '智能环境灯（2030_light.glb）最可能退行成哪一项？',
     correctOptionId: 'B',
     options: [
-      { id: 'A', label: 'A. 留声机' },
-      { id: 'B', label: 'B. 收音机' },
-      { id: 'C', label: 'C. 传呼机' },
-      { id: 'D', label: 'D. 麦克风' },
+      { id: 'A', label: 'A. 强光手电筒（semantic）' },
+      { id: 'B', label: 'B. 手提式煤油马灯（narrative）' },
+      { id: 'C', label: 'C. 发光的磨砂白色乒乓球（visual）' },
+      { id: 'D', label: 'D. 玻璃水杯（baseline 无关项）' },
     ],
   },
   {
-    id: 'wireless-charger',
-    name: '无线充电器',
-    question: '如果这个无线充电器退行到 1960 年代，它最可能变成什么？',
-    correctOptionId: 'A',
-    options: [
-      { id: 'A', label: 'A. 有线充电底座' },
-      { id: 'B', label: 'B. 插线板' },
-      { id: 'C', label: 'C. 电池盒' },
-      { id: 'D', label: 'D. 变压器' },
-    ],
-  },
-  {
-    id: 'lcd-tv',
-    name: '液晶电视',
-    question: '如果这个液晶电视退行到 1960 年代，它最可能变成什么？',
-    correctOptionId: 'D',
-    options: [
-      { id: 'A', label: 'A. 幻灯机' },
-      { id: 'B', label: 'B. 投影幕布' },
-      { id: 'C', label: 'C. 电影放映机' },
-      { id: 'D', label: 'D. CRT 电视' },
-    ],
-  },
-  {
-    id: 'air-purifier',
-    name: '空气净化器',
-    question: '如果这个空气净化器退行到 1960 年代，它最可能变成什么？',
-    correctOptionId: 'C',
-    options: [
-      { id: 'A', label: 'A. 电风扇' },
-      { id: 'B', label: 'B. 加湿器' },
-      { id: 'C', label: 'C. 机械通风器' },
-      { id: 'D', label: 'D. 香薰机' },
-    ],
-  },
-  {
-    id: 'robot-vacuum',
-    name: '扫地机器人',
-    question: '如果这个扫地机器人退行到 1960 年代，它最可能变成什么？',
-    correctOptionId: 'A',
-    options: [
-      { id: 'A', label: 'A. 手推吸尘器' },
-      { id: 'B', label: 'B. 鸡毛掸子' },
-      { id: 'C', label: 'C. 拖把' },
-      { id: 'D', label: 'D. 扫帚' },
-    ],
-  },
-  {
-    id: 'smartwatch',
-    name: '智能手表',
-    question: '如果这个智能手表退行到 1960 年代，它最可能变成什么？',
-    correctOptionId: 'D',
-    options: [
-      { id: 'A', label: 'A. 秒表' },
-      { id: 'B', label: 'B. 机械计步器' },
-      { id: 'C', label: 'C. 电子表' },
-      { id: 'D', label: 'D. 机械腕表' },
-    ],
-  },
-  {
-    id: 'tablet',
-    name: '平板电脑',
-    question: '如果这个平板电脑退行到 1960 年代，它最可能变成什么？',
+    id: 'laptop',
+    name: '笔记本电脑',
+    question: '笔记本电脑（2030_laptop.glb）最可能退行成哪一项？',
     correctOptionId: 'B',
     options: [
-      { id: 'A', label: 'A. 打字机' },
-      { id: 'B', label: 'B. 纸质笔记本' },
-      { id: 'C', label: 'C. 电话簿' },
-      { id: 'D', label: 'D. 黑板' },
+      { id: 'A', label: 'A. 传统的木框算盘（semantic）' },
+      { id: 'B', label: 'B. 雷明顿机械打字机（narrative）' },
+      { id: 'C', label: 'C. 银色不锈钢咖啡托盘（baseline 无关项）' },
+      { id: 'D', label: 'D. 折叠式便携梳妆镜（visual）' },
     ],
   },
   {
-    id: 'bluetooth-headset',
-    name: '蓝牙耳机',
-    question: '如果这个蓝牙耳机退行到 1960 年代，它最可能变成什么？',
-    correctOptionId: 'C',
-    options: [
-      { id: 'A', label: 'A. 扩音喇叭' },
-      { id: 'B', label: 'B. 收音机天线' },
-      { id: 'C', label: 'C. 有线耳机' },
-      { id: 'D', label: 'D. 助听器' },
-    ],
-  },
-  {
-    id: 'induction-cooker',
-    name: '电磁炉',
-    question: '如果这个电磁炉退行到 1960 年代，它最可能变成什么？',
+    id: 'smartphone',
+    name: '智能手机',
+    question: '智能手机（2030_handphone.glb）最可能退行成哪一项？',
     correctOptionId: 'A',
     options: [
-      { id: 'A', label: 'A. 电热炉' },
-      { id: 'B', label: 'B. 炭火炉' },
-      { id: 'C', label: 'C. 酒精炉' },
-      { id: 'D', label: 'D. 煤气灶' },
+      { id: 'A', label: 'A. 牛皮纸信封（narrative）' },
+      { id: 'B', label: 'B. 火柴盒（semantic）' },
+      { id: 'C', label: 'C. 陶瓷烟灰缸（baseline 无关项）' },
+      { id: 'D', label: 'D. 黑色磨砂石板（visual）' },
     ],
   },
   {
-    id: 'smart-door-lock',
-    name: '智能门锁',
-    question: '如果这个智能门锁退行到 1960 年代，它最可能变成什么？',
+    id: 'digital-wallet',
+    name: '数字钱包',
+    question: '数字钱包（2030_digital_wallet.glb）最可能退行成哪一项？',
+    correctOptionId: 'B',
+    options: [
+      { id: 'A', label: 'A. 黑色扁平充电宝（visual）' },
+      { id: 'B', label: 'B. 磨损的皮革钱袋与银币（narrative）' },
+      { id: 'C', label: 'C. 手持雨伞的手柄（baseline 无关项）' },
+      { id: 'D', label: 'D. 纸质银行存折（semantic）' },
+    ],
+  },
+  {
+    id: 'smart-coffee-machine',
+    name: '智能咖啡机',
+    question: '智能咖啡机（2030_coffee_machine.glb）最可能退行成哪一项？',
+    correctOptionId: 'C',
+    options: [
+      { id: 'A', label: 'A. 金属垃圾桶（visual）' },
+      { id: 'B', label: 'B. 旧报纸（baseline 无关项）' },
+      { id: 'C', label: 'C. 手摇研磨机、炭火铜炉（narrative）' },
+      { id: 'D', label: 'D. 咖啡包装袋（semantic）' },
+    ],
+  },
+  {
+    id: 'smart-air-conditioner',
+    name: '智能中央空调',
+    question: '智能中央空调（2030_air_conditioner.glb）最可能退行成哪一项？',
     correctOptionId: 'D',
     options: [
-      { id: 'A', label: 'A. 门铃' },
-      { id: 'B', label: 'B. 插销' },
-      { id: 'C', label: 'C. 门把手' },
-      { id: 'D', label: 'D. 机械钥匙锁' },
+      { id: 'A', label: 'A. 墙上的白色横梁（visual）' },
+      { id: 'B', label: 'B. 绿色盆栽（baseline 无关项）' },
+      { id: 'C', label: 'C. 三叶电风扇（semantic）' },
+      { id: 'D', label: 'D. 铸铁暖气片（narrative）' },
+    ],
+  },
+  {
+    id: 'plasma-lighter',
+    name: '电浆打火机',
+    question: '电浆打火机（2030_lighter.glb）最可能退行成哪一项？',
+    correctOptionId: 'C',
+    options: [
+      { id: 'A', label: 'A. 塑料美发梳（baseline 无关项）' },
+      { id: 'B', label: 'B. 聚光放大镜（semantic）' },
+      { id: 'C', label: 'C. 木制火柴盒（narrative）' },
+      { id: 'D', label: 'D. 圆柱金属外壳口红（visual）' },
     ],
   },
 ]
@@ -436,6 +436,7 @@ function App() {
       setFormalPanelItem(item)
       setFormalSelected('')
       panelOpenAtRef.current = Date.now()
+      track('formal_object_clicked', { itemId: item.id })
       track('formal_question_opened', { itemId: item.id })
     },
     [formalAnsweredIds, sessionId, step],
@@ -529,12 +530,27 @@ function App() {
   )
 
   const formalSceneItems = useMemo(
-    () =>
-      FORMAL_ITEMS.map((item) => ({
+    () => {
+      const slotOverrides: Record<string, number> = {
+        'nano-repair-spray': 9,
+        'smart-speaker': 7,
+        'holographic-projector': 15,
+        'smart-environment-lamp': 14,
+        laptop: 6,
+        smartphone: 5,
+        'digital-wallet': 3,
+        'smart-coffee-machine': 1,
+        'smart-air-conditioner': 0,
+        'plasma-lighter': 14,
+      }
+
+      return FORMAL_ITEMS.map((item) => ({
         id: item.id,
         name: item.name,
         answered: formalAnsweredIds.has(item.id),
-      })),
+        slotOverride: slotOverrides[item.id],
+      }))
+    },
     [formalAnsweredIds],
   )
 
