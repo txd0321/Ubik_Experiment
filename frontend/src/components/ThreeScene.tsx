@@ -352,9 +352,9 @@ export default function ThreeScene({
 
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(mount.clientWidth, mount.clientHeight)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
     renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.shadowMap.type = THREE.PCFShadowMap
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.25
@@ -807,18 +807,31 @@ export default function ThreeScene({
     scene.add(new THREE.AmbientLight(0xfff2dc, 0.7))
     scene.add(new THREE.HemisphereLight(0xbfd7ff, 0x6d5f50, 0.85))
 
-    const ceilingLight = new THREE.PointLight(0xfff4e8, 2.4, 28, 2)
+    const ceilingLight = new THREE.PointLight(0xfff4e8, 2.1, 28, 2)
     ceilingLight.position.set(0, ROOM_HEIGHT - 0.15, 0)
-    ceilingLight.castShadow = true
-    ceilingLight.shadow.mapSize.set(1024, 1024)
+    // PointLight 阴影开销很高，这里关闭以提升性能
+    ceilingLight.castShadow = false
     scene.add(ceilingLight)
 
-    const fillLight = new THREE.DirectionalLight(0xdde7ff, 1.1)
+    const fillLight = new THREE.DirectionalLight(0xdde7ff, 1.05)
     fillLight.position.set(-4, 4, 5)
+    // 仅保留一盏主阴影灯，显著降低阴影渲染成本
+    fillLight.castShadow = true
+    fillLight.shadow.mapSize.set(1024, 1024)
+    fillLight.shadow.radius = 0
+    fillLight.shadow.camera.left = -7
+    fillLight.shadow.camera.right = 7
+    fillLight.shadow.camera.top = 7
+    fillLight.shadow.camera.bottom = -7
+    fillLight.shadow.camera.near = 0.5
+    fillLight.shadow.camera.far = 18
+    fillLight.shadow.bias = -0.0001
+    fillLight.shadow.normalBias = 0.012
     scene.add(fillLight)
 
-    const frontFillLight = new THREE.DirectionalLight(0xffffff, 0.8)
+    const frontFillLight = new THREE.DirectionalLight(0xffffff, 0.75)
     frontFillLight.position.set(5, 3, 6)
+    frontFillLight.castShadow = false
     scene.add(frontFillLight)
 
     const lampShade = new THREE.Mesh(
@@ -1302,7 +1315,7 @@ export default function ThreeScene({
       camera.aspect = width / height
       camera.updateProjectionMatrix()
       renderer.setSize(width, height)
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
     }
 
     window.addEventListener('resize', onResize)
