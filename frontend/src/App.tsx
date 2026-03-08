@@ -104,7 +104,7 @@ const FORMAL_ITEMS: ItemQuestion[] = [
     question: '全息投影仪最可能退行成哪一项？',
     correctOptionId: 'A',
     options: [
-      { id: 'A', label: 'A. 古董幻灯机' },
+      { id: 'A', label: 'A. 收音机' },
       { id: 'B', label: 'B. 铁制家用剪刀' },
       { id: 'C', label: 'C. 现代极简透明玻璃立方体/花瓶' },
       { id: 'D', label: 'D. 宽屏超薄液晶显示器' },
@@ -194,6 +194,126 @@ const FORMAL_ITEMS: ItemQuestion[] = [
       { id: 'D', label: 'D. 圆柱金属外壳口红' },
     ],
   },
+  {
+    id: 'smart-toilet',
+    name: '智能马桶',
+    question: '智能马桶最可能退行成哪一项？',
+    correctOptionId: 'B',
+    options: [
+      { id: 'A', label: 'A. 现代白色陶瓷洗手台' },
+      { id: 'B', label: 'B. 搪瓷图案夜壶/痰盂' },
+      { id: 'C', label: 'C. 几卷现代卫生纸' },
+      { id: 'D', label: 'D. 木质地球仪' },
+    ],
+  },
+  {
+    id: 'sonic-toothbrush',
+    name: '电动牙刷',
+    question: '电动牙刷最可能退行成哪一项？',
+    correctOptionId: 'A',
+    options: [
+      { id: 'A', label: 'A. 猪鬃牙刷与铁盒牙粉' },
+      { id: 'B', label: 'B. 塑料软毛牙刷' },
+      { id: 'C', label: 'C. 金属螺丝刀' },
+      { id: 'D', label: 'D. 白板笔' },
+    ],
+  },
+  {
+    id: 'hair-dryer',
+    name: '电动吹风机',
+    question: '电动吹风机最可能退行成哪一项？',
+    correctOptionId: 'C',
+    options: [
+      { id: 'A', label: 'A. 电直板夹' },
+      { id: 'B', label: 'B. 手持金属放大镜' },
+      { id: 'C', label: 'C. 老式美发工具组' },
+      { id: 'D', label: 'D. 陶瓷咖啡杯' },
+    ],
+  },
+  {
+    id: 'smart-shower-system',
+    name: '智能淋浴系统',
+    question: '智能淋浴系统最可能退行成哪一项？',
+    correctOptionId: 'C',
+    options: [
+      { id: 'A', label: 'A. 圆形顶灯+金属落地灯组合' },
+      { id: 'B', label: 'B. 多功能花洒' },
+      { id: 'C', label: 'C. 掉漆浴缸+木质水瓢' },
+      { id: 'D', label: 'D. 木质吉他' },
+    ],
+  },
+  {
+    id: 'smart-washbasin',
+    name: '智能盥洗台',
+    question: '智能盥洗台最可能退行成哪一项？',
+    correctOptionId: 'A',
+    options: [
+      { id: 'A', label: 'A. 搪瓷洗脸盆+木质洗漱架' },
+      { id: 'B', label: 'B. 不锈钢洗碗池' },
+      { id: 'C', label: 'C. 纯白办公书桌' },
+      { id: 'D', label: 'D. 百科全书' },
+    ],
+  },
+  {
+    id: 'smart-refrigerator',
+    name: '智能冰箱',
+    question: '智能冰箱最可能退行成哪一项？',
+    correctOptionId: 'A',
+    options: [
+      { id: 'A', label: 'A. 老式木质冰柜' },
+      { id: 'B', label: 'B. 双开门保险箱' },
+      { id: 'C', label: 'C. 智能保温箱' },
+      { id: 'D', label: 'D. 落地衣架' },
+    ],
+  },
+  {
+    id: 'smart-rice-cooker',
+    name: '智能电饭煲',
+    question: '智能电饭煲最可能退行成哪一项？',
+    correctOptionId: 'D',
+    options: [
+      { id: 'A', label: 'A. 不锈钢高压锅' },
+      { id: 'B', label: 'B. 仙人掌盆栽' },
+      { id: 'C', label: 'C. 摩托车头盔' },
+      { id: 'D', label: 'D. 铸铁双耳吊锅' },
+    ],
+  },
+  {
+    id: 'robot-vacuum-cleaner',
+    name: '扫地机器人',
+    question: '扫地机器人最可能退行成哪一项？',
+    correctOptionId: 'C',
+    options: [
+      { id: 'A', label: 'A. 圆形玻璃体重秤' },
+      { id: 'B', label: 'B. 吸尘器' },
+      { id: 'C', label: 'C. 扫帚与簸箕' },
+      { id: 'D', label: 'D. 陶瓷餐盘' },
+    ],
+  },
+  {
+    id: 'smart-kettle',
+    name: '电热水壶',
+    question: '电热水壶最可能退行成哪一项？',
+    correctOptionId: 'B',
+    options: [
+      { id: 'A', label: 'A. 保温杯' },
+      { id: 'B', label: 'B. 铜制烧水壶' },
+      { id: 'C', label: 'C. 铁锤' },
+      { id: 'D', label: 'D. 榨汁机' },
+    ],
+  },
+  {
+    id: 'microwave-oven',
+    name: '微波炉',
+    question: '微波炉最可能退行成哪一项？',
+    correctOptionId: 'A',
+    options: [
+      { id: 'A', label: 'A. 柴火炉' },
+      { id: 'B', label: 'B. 老式天线电视机' },
+      { id: 'C', label: 'C. 小提琴琴盒' },
+      { id: 'D', label: 'D. 空气炸锅' },
+    ],
+  },
 ]
 
 function shuffleOptions(options: Option[]): Option[] {
@@ -201,7 +321,14 @@ function shuffleOptions(options: Option[]): Option[] {
 }
 
 function getInitialStepFromQuery(): Step {
-  const stepParam = new URLSearchParams(window.location.search).get('step')
+  const query = new URLSearchParams(window.location.search)
+  const stepParam = query.get('step')
+  const forceAllCompleted = query.get('forceAllCompleted') === '1'
+  const previewFormalExit = query.get('previewFormalExit') === '1'
+
+  // 预览参数兜底：未显式传 step 时默认进入 formal
+  if (!stepParam && (forceAllCompleted || previewFormalExit)) return 'formal'
+
   if (stepParam === 'welcome') return 'welcome'
   if (stepParam === 'tutorial') return 'practice'
   if (stepParam === 'practice') return 'practice'
@@ -212,6 +339,10 @@ function getInitialStepFromQuery(): Step {
 
 function isFormalExitPreviewEnabled() {
   return new URLSearchParams(window.location.search).get('previewFormalExit') === '1'
+}
+
+function isForceAllCompletedEnabled() {
+  return new URLSearchParams(window.location.search).get('forceAllCompleted') === '1'
 }
 
 function App() {
@@ -235,6 +366,7 @@ function App() {
   const [formalAnswers, setFormalAnswers] = useState<FormalAnswer[]>([])
   const [formalCompleted, setFormalCompleted] = useState(false)
   const [showFormalExitButton, setShowFormalExitButton] = useState(() => isFormalExitPreviewEnabled())
+  const [forceAllCompletedPreview] = useState(() => isForceAllCompletedEnabled())
 
   const [surveyData, setSurveyData] = useState<SurveyData>({
     taskDifficulty: '',
@@ -328,9 +460,17 @@ function App() {
     }
     if (step === 'formal') {
       formalStepStartedAtRef.current = Date.now()
-      setFormalCompleted(false)
-      setShowFormalExitButton(isFormalExitPreviewEnabled())
+      setFormalCompleted(forceAllCompletedPreview)
+      setShowFormalExitButton(isFormalExitPreviewEnabled() || forceAllCompletedPreview)
       track('formal_scene_loaded')
+
+      if (forceAllCompletedPreview) {
+        track('formal_all_completed')
+        track('formal_environment_transition_started')
+        window.setTimeout(() => {
+          track('formal_environment_transition_finished')
+        }, 2000)
+      }
     }
   }, [sessionId, step])
 
@@ -629,7 +769,7 @@ function App() {
   const formalSceneItems = useMemo(
     () => {
       const slotOverrides: Record<string, number> = {
-        // 严格对齐 PRD 186-201（卧室10个可交互物体）
+        // 卧室（1-10）
         'nano-repair-spray': 9,
         'smart-speaker': 7,
         // 03：A/B 视为同一交互物体，这里用 A 的槽位作为交互点
@@ -641,6 +781,18 @@ function App() {
         'smart-coffee-machine': 1,
         'smart-air-conditioner': 0,
         'plasma-lighter': 14,
+        // 厕所（11-15）
+        'smart-toilet': 18,
+        'sonic-toothbrush': 19,
+        'hair-dryer': 20,
+        'smart-shower-system': 21,
+        'smart-washbasin': 22,
+        // 厨房（16-20）
+        'smart-refrigerator': 23,
+        'smart-rice-cooker': 24,
+        'robot-vacuum-cleaner': 25,
+        'smart-kettle': 26,
+        'microwave-oven': 27,
       }
 
       const mainItems = FORMAL_ITEMS.map((item) => ({
@@ -658,9 +810,70 @@ function App() {
         slotOverride: 15,
       })
 
+      // PRD 248-269：nonitr 需在场景中展示，并在全完成后切换到 1930
+      const nonInteractiveAnswered = forceAllCompletedPreview || formalCompleted
+      mainItems.push(
+        // 卧室 nonitr（1-7）
+        {
+          id: 'bedroom-nonitr-01',
+          name: '卧室非交互：桌子',
+          answered: nonInteractiveAnswered,
+          slotOverride: 8,
+        },
+        {
+          id: 'bedroom-nonitr-02',
+          name: '卧室非交互：床',
+          answered: nonInteractiveAnswered,
+          slotOverride: 12,
+        },
+        {
+          id: 'bedroom-nonitr-03',
+          name: '卧室非交互：茶几',
+          answered: nonInteractiveAnswered,
+          slotOverride: 13,
+        },
+        {
+          id: 'bedroom-nonitr-04',
+          name: '卧室非交互：椅子',
+          answered: nonInteractiveAnswered,
+          slotOverride: 10,
+        },
+        {
+          id: 'bedroom-nonitr-05',
+          name: '卧室非交互：沙发',
+          answered: nonInteractiveAnswered,
+          slotOverride: 11,
+        },
+        {
+          id: 'bedroom-nonitr-06',
+          name: '卧室非交互：前门',
+          answered: nonInteractiveAnswered,
+          slotOverride: 4,
+        },
+        {
+          id: 'bedroom-nonitr-07',
+          name: '卧室非交互：盆栽',
+          answered: nonInteractiveAnswered,
+          slotOverride: 2,
+        },
+        // 厨房 nonitr（8-9）
+        {
+          id: 'kitchen-nonitr-08',
+          name: '厨房非交互：橱柜烟囱',
+          answered: nonInteractiveAnswered,
+          slotOverride: 28,
+        },
+        {
+          id: 'kitchen-nonitr-09',
+          name: '厨房非交互：窗户',
+          answered: nonInteractiveAnswered,
+          slotOverride: 29,
+        },
+      )
+
       return mainItems
     },
-    [formalAnsweredIds],
+    [formalAnsweredIds, formalCompleted, forceAllCompletedPreview],
   )
 
   const handlePracticeItemClick = useCallback(() => {

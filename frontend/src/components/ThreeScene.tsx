@@ -150,6 +150,81 @@ const ITEM_CONFIGS: ItemPlacementConfig[] = [
     targetSize: 1.6,
     rotationY: 0,
   },
+  // ===== 厕所（11-15） =====
+  {
+    modelPath: '/assets/models/itr_11_2030_smart_toilet_toilet.glb',
+    position: [-6, 0, 12.8],
+    targetSize: 3.1,
+    rotationY: Math.PI / 2,
+  },
+  {
+    modelPath: '/assets/models/itr_12_2030_sonic_toothbrush_toilet.glb',
+    position: [-4.3, 1.05, 9.4],
+    targetSize: 1.2,
+    rotationY: Math.PI / 2,
+  },
+  {
+    modelPath: '/assets/models/itr_13_2030_hair_dryer_toilet.glb',
+    position: [-2.3, 1.25, 10.6],
+    targetSize: 1.4,
+    rotationY: -Math.PI / 2,
+  },
+  {
+    modelPath: '/assets/models/itr_14_2030_smart_shower_system_toilet.glb',
+    position: [-7.2, 4.6, 16],
+    targetSize: 4.4,
+    rotationY: Math.PI / 2,
+  },
+  {
+    modelPath: '/assets/models/itr_15_2030_smart_washbasin_toilet.glb',
+    position: [-2.8, 0.1, 15.6],
+    targetSize: 4.6,
+    rotationY: -Math.PI / 2,
+  },
+  // ===== 厨房（16-20） =====
+  {
+    modelPath: '/assets/models/itr_16_2030_smart_refrigerator_kitchen.glb',
+    position: [14.2, 0, -7],
+    targetSize: 5.8,
+    rotationY: -Math.PI / 2,
+  },
+  {
+    modelPath: '/assets/models/itr_17_2030_smart_rice_cooker_kitchen.glb',
+    position: [12.5, 1.5, -0.6],
+    targetSize: 1.8,
+    rotationY: -Math.PI / 2,
+  },
+  {
+    modelPath: '/assets/models/itr_18_2030_robot_vacuum_cleaner_kitchen.glb',
+    position: [10.2, 0.1, -3],
+    targetSize: 1.6,
+    rotationY: 0,
+  },
+  {
+    modelPath: '/assets/models/itr_19_2030_smart_kettle_kitchen.glb',
+    position: [9.4, 1.4, -6.3],
+    targetSize: 1.6,
+    rotationY: Math.PI / 2,
+  },
+  {
+    modelPath: '/assets/models/itr_20_2030_microwave_oven_kitchen.glb',
+    position: [11.1, 1.8, -7.1],
+    targetSize: 2.2,
+    rotationY: Math.PI,
+  },
+  // ===== 厨房非交互（nonitr_08-09） =====
+  {
+    modelPath: '/assets/models/nonitr_08_2030_stove_hood_kitchen.glb',
+    position: [12.2, 0, -7.5],
+    targetSize: 7.2,
+    rotationY: -Math.PI / 2,
+  },
+  {
+    modelPath: '/assets/models/nonitr_09_2030_window_kitchen.glb',
+    position: [15.8, 2.4, -2.4],
+    targetSize: 5.2,
+    rotationY: Math.PI,
+  },
 ]
 
 type ItemVisual = {
@@ -165,10 +240,12 @@ type ItemVisual = {
   suppressAnsweredGreen: boolean
   answered: boolean
   active: boolean
+  isInteractive: boolean
   baseY: number
   futureModel: THREE.Object3D | null
   transitioningToHistoric: boolean
   hasSwitchedToHistoric: boolean
+  loadingHistoricModel: boolean
 }
 
 type SceneCore = {
@@ -198,7 +275,7 @@ const NO_GREEN_MODEL_PATHS = new Set([
 ])
 
 const HISTORIC_MODEL_BY_SLOT: Partial<Record<number, string>> = {
-  // 严格对齐 PRD 卧室 10 个可交互物体
+  // 卧室（1-10）
   0: '/assets/models/itr_09_1930_heating_bedroom.glb',
   1: '/assets/models/itr_08_1930_handmadeCoffeeTools_bedroom.glb',
   3: '/assets/models/itr_07_1930_purse_bedroom.glb',
@@ -210,6 +287,29 @@ const HISTORIC_MODEL_BY_SLOT: Partial<Record<number, string>> = {
   // 03：A/B 合并交互后统一替换为 radio
   16: '/assets/models/itr_03_1930_radio_bedroom.glb',
   17: '/assets/models/itr_04_1930_keroseneLamp_bedroom.glb',
+  // 卧室非交互（1-7）
+  8: '/assets/models/nonitr_01_1930_table_bedroom.glb',
+  12: '/assets/models/nonitr_02_1930_bed_bedroom.glb',
+  13: '/assets/models/nonitr_03_1930_teaTable_bedroom.glb',
+  10: '/assets/models/nonitr_04_1930_chair_bedroom.glb',
+  11: '/assets/models/nonitr_05_1930_sofa_bedroom.glb',
+  4: '/assets/models/nonitr_06_1930_frontDoor_bedroom.glb',
+  2: '/assets/models/nonitr_07_1930_pottedPlant_bedroom.glb',
+  // 厕所（11-15）
+  18: '/assets/models/itr_11_1930_sputum_bowl_toilet.glb',
+  19: '/assets/models/itr_12_1930_tooth_powder_toilet.glb',
+  20: '/assets/models/itr_13_1930_hair_dryer_toilet.glb',
+  21: '/assets/models/itr_14_1930_shower_bucket_toilet.glb',
+  22: '/assets/models/itr_15_1930_pitcher_basin_toilet.glb',
+  // 厨房（16-20）
+  23: '/assets/models/itr_16_1930_icebox_kitchen.glb',
+  24: '/assets/models/itr_17_1930_iron_pot_kitchen.glb',
+  25: '/assets/models/itr_18_1930_broom_dustpan_kitchen.glb',
+  26: '/assets/models/itr_19_1930_copper_kettle_kitchen.glb',
+  27: '/assets/models/itr_20_1930_stove_fire_kitchen.glb',
+  // 厨房非交互（8-9）
+  28: '/assets/models/nonitr_08_1930_cupboard_chimney_kitchen.glb',
+  29: '/assets/models/nonitr_09_1930_window_kitchen.glb',
 }
 
 function fitModelToTarget(model: THREE.Object3D, targetSize = 1.1) {
@@ -929,9 +1029,11 @@ export default function ThreeScene({
     const loadHistoricModelIntoVisual = async (visual: ItemVisual) => {
       if (scenePreset === 'practice') return
       const config = ITEM_CONFIGS[visual.slot]
-      if (!config || visual.futureModel || visual.hasSwitchedToHistoric) return
+      if (!config || visual.futureModel || visual.hasSwitchedToHistoric || visual.loadingHistoricModel) return
       const historicPath = HISTORIC_MODEL_BY_SLOT[visual.slot]
       if (!historicPath) return
+
+      visual.loadingHistoricModel = true
 
       try {
         let model = historicModelCache.get(visual.slot)
@@ -953,6 +1055,8 @@ export default function ThreeScene({
         visual.transitioningToHistoric = true
       } catch {
         // ignore historic model load failure
+      } finally {
+        visual.loadingHistoricModel = false
       }
     }
 
@@ -997,6 +1101,8 @@ export default function ThreeScene({
       const haloBaseScale = THREE.MathUtils.clamp(0.62 + targetSize * 0.06, 0.72, 1.15)
       const haloPulseAmplitude = THREE.MathUtils.clamp(0.06 + targetSize * 0.012, 0.07, 0.15)
 
+      const isInteractive = !item.id.includes('-nonitr-')
+
       const visual: ItemVisual = {
         id: item.id,
         slot,
@@ -1010,10 +1116,12 @@ export default function ThreeScene({
         suppressAnsweredGreen,
         answered: item.answered,
         active: false,
+        isInteractive,
         baseY: y,
         futureModel: null,
         transitioningToHistoric: false,
         hasSwitchedToHistoric: false,
+        loadingHistoricModel: false,
       }
 
       visualsById.set(item.id, visual)
@@ -1124,7 +1232,7 @@ export default function ThreeScene({
       }
 
       const visual = visualsById.get(hoveredItemId)
-      const isClickable = Boolean(visual && !visual.answered && visual.active)
+      const isClickable = Boolean(visual && visual.isInteractive && !visual.answered && visual.active)
       renderer.domElement.style.cursor = isClickable ? 'pointer' : 'default'
     }
 
@@ -1148,7 +1256,7 @@ export default function ThreeScene({
       const targetItemId = resolveHoveredItemId(event)
       if (!targetItemId) return
       const visual = visualsById.get(targetItemId)
-      if (!visual || visual.answered || !visual.active) return
+      if (!visual || !visual.isInteractive || visual.answered || !visual.active) return
       onItemClickRef.current(targetItemId)
     }
 
@@ -1232,7 +1340,7 @@ export default function ThreeScene({
         const dx = camera.position.x - visual.root.position.x
         const dz = camera.position.z - visual.root.position.z
         const planarDistance = Math.hypot(dx, dz)
-        visual.active = !visual.answered && planarDistance <= INTERACT_DISTANCE
+        visual.active = visual.isInteractive && !visual.answered && planarDistance <= INTERACT_DISTANCE
 
         const haloMat = visual.glowHalo.material as THREE.MeshBasicMaterial
         if (visual.active && !visual.answered) {
@@ -1247,13 +1355,14 @@ export default function ThreeScene({
         }
 
         if (visual.transitioningToHistoric && visual.clickable) {
+          const TRANSITION_SPEED = 0.9
           const currentScale = visual.clickable.scale.x
-          const nextScale = Math.max(0.001, currentScale - delta * 2.8)
+          const nextScale = Math.max(0.001, currentScale - delta * TRANSITION_SPEED)
           visual.clickable.scale.setScalar(nextScale)
 
           if (visual.futureModel) {
             const targetScale = 1
-            const histScale = Math.min(targetScale, visual.futureModel.scale.x + delta * 2.8)
+            const histScale = Math.min(targetScale, visual.futureModel.scale.x + delta * TRANSITION_SPEED)
             visual.futureModel.scale.setScalar(histScale)
 
             if (histScale >= targetScale && nextScale <= 0.02) {
@@ -1408,7 +1517,8 @@ export default function ThreeScene({
       if (!visual) return
 
       visual.answered = item.answered
-      if (visual.answered) {
+      visual.isInteractive = !item.id.includes('-nonitr-')
+      if (visual.answered || !visual.isInteractive) {
         visual.active = false
       }
 
