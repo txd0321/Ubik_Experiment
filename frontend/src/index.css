@@ -213,7 +213,7 @@ textarea {
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 999px;
   padding: 12px 24px;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   backdrop-filter: blur(2px);
 }
@@ -457,6 +457,27 @@ button:disabled {
   border-radius: 14px;
   padding: 20px;
   border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.qa-panel--transition {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  text-align: center;
+  background: rgba(51, 51, 51, 0.6);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  border: none;
+}
+
+.qa-panel--transition h3,
+.qa-panel--transition p {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.5;
 }
 
 .qa-panel-close {

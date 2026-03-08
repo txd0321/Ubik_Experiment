@@ -474,7 +474,7 @@ function App() {
         track('formal_environment_transition_started')
         window.setTimeout(() => {
           track('formal_environment_transition_finished')
-        }, 2000)
+        }, 5000)
       }
     }
   }, [sessionId, step])
@@ -705,7 +705,7 @@ function App() {
       window.setTimeout(() => {
         track('formal_environment_transition_finished')
         setShowFormalExitButton(true)
-      }, 2000)
+      }, 5000)
     }
   }
 
@@ -1025,7 +1025,6 @@ function App() {
               onActiveItemsChange={setPracticeActiveItemIds}
               scenePreset="practice"
               interactionLocked={practicePanelOpen}
-              showAxesHelper
               renderUnusedSlots={false}
               initialCameraPosition={[-1.5, 2.4, 5.6]}
               initialTarget={[-3.2, 1.25, 3.5]}
@@ -1127,7 +1126,6 @@ function App() {
               items={formalSceneItems}
               onItemClick={handleFormalItemClick}
               interactionLocked={Boolean(formalPanelItem)}
-              showAxesHelper
               forceHistoricModels={allHistoricPreview}
               initialCameraPosition={[7, 5, -7]}
               initialTarget={[7, 5, -2]}
@@ -1135,9 +1133,9 @@ function App() {
           </div>
 
           {formalCompleted && !showFormalExitButton && !formalPanelItem && (
-            <div className="qa-panel">
-              <h3>恭喜你已完成所有任务</h3>
-              <p>场景正在从 2030 过渡到 1930，请稍候...</p>
+            <div className="qa-panel qa-panel--transition">
+              <h3>恭喜你已完成所有任务！</h3>
+              <p>你将看见2030 年时间退行到 1930年...</p>
             </div>
           )}
 

@@ -415,13 +415,20 @@ export default function ThreeScene({
     // Step2 三空间：主房间为卧室；厨房由(8,0,-5)门洞外扩6x5；厕所由(-5,0,8)门洞外扩6x6
     if (scenePreset === 'default') {
       const partitionMaterial = new THREE.MeshStandardMaterial({
-        color: 0xe6e3dc,
-        roughness: 0.9,
-        metalness: 0.02,
+        color: 0xffffff,
+        map: scenePreset === 'practice' ? null : wallpaperMap,
+        normalMap: scenePreset === 'practice' ? null : wallNormalMap,
+        normalScale: new THREE.Vector2(0.22, 0.22),
+        roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
+        metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
+        roughness: scenePreset === 'practice' ? 0.95 : 0.62,
+        metalness: scenePreset === 'practice' ? 0.02 : 0.18,
+        emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
+        emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
       })
 
       const extFloorMaterial = new THREE.MeshStandardMaterial({
-        color: 0xf4f4f4,
+        color: 0x000000,
         roughness: 0.95,
         metalness: 0.02,
       })
@@ -682,7 +689,9 @@ export default function ThreeScene({
     ceilingLight.position.set(0, ROOM_HEIGHT - 0.15, 0)
     // PointLight 阴影开销很高，这里关闭以提升性能
     ceilingLight.castShadow = false
-    scene.add(ceilingLight)
+    if (scenePreset !== 'default') {
+      scene.add(ceilingLight)
+    }
 
     const fillLight = new THREE.DirectionalLight(0xdde7ff, 1.05)
     fillLight.position.set(-4, 4, 5)
@@ -705,18 +714,20 @@ export default function ThreeScene({
     frontFillLight.castShadow = false
     scene.add(frontFillLight)
 
-    const lampShade = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.35, 0.55, 0.6, 24, 1, true),
-      new THREE.MeshStandardMaterial({
-        color: 0xf2e6cc,
-        roughness: 0.6,
-        metalness: 0.05,
-        side: THREE.DoubleSide,
-      }),
-    )
-    lampShade.position.copy(ceilingLight.position)
-    lampShade.position.y -= 0.2
-    scene.add(lampShade)
+    if (scenePreset !== 'default') {
+      const lampShade = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.35, 0.55, 0.6, 24, 1, true),
+        new THREE.MeshStandardMaterial({
+          color: 0xf2e6cc,
+          roughness: 0.6,
+          metalness: 0.05,
+          side: THREE.DoubleSide,
+        }),
+      )
+      lampShade.position.copy(ceilingLight.position)
+      lampShade.position.y -= 0.2
+      scene.add(lampShade)
+    }
 
     const itemGroup = new THREE.Group()
     scene.add(itemGroup)
