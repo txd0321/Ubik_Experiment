@@ -450,7 +450,8 @@ function App() {
         skippedTrajectoryTimestampsRef.current.push(ts)
         return
       }
-      trajectoryRef.current.push([cx, cz, ts, cx, cy, cz, dx, dy, dz])
+      // [timestamp_ms, positionX, positionY, positionZ, directionX, directionY, directionZ] (camera = position, no duplication)
+      trajectoryRef.current.push([ts, cx, cy, cz, dx, dy, dz])
       lastTrajectoryRecordRef.current = {
         ts,
         position: [cx, cy, cz],
@@ -663,7 +664,7 @@ function App() {
         const ts = Date.now()
         postSubmitSamplesRef.current.push({
           afterQuestionIndex: orderIndexForSubmit,
-          point: [cx, cz, ts, cx, cy, cz, dx, dy, dz],
+          point: [ts, cx, cy, cz, dx, dy, dz],
         })
       }
     })

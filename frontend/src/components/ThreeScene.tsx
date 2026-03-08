@@ -337,7 +337,9 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     captureScreenshot(width: number, height: number, quality = 0.6) {
       const core = coreRef.current
       if (!core) return ''
-      const { renderer } = core
+      const { scene, camera, renderer } = core
+      // Force one frame render before capture so the buffer is up-to-date (avoids black image)
+      renderer.render(scene, camera)
       const canvas = document.createElement('canvas')
       canvas.width = width
       canvas.height = height
