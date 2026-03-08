@@ -1108,7 +1108,7 @@ function App() {
                 </button>
               ) : (
                 <span className="ghost-btn ghost-btn--formal-exit-tip" style={{ opacity: 0.7, pointerEvents: 'none' }}>
-                  完成全部题目后可退出
+                  自由移动寻找发光物体
                 </span>
               )}
             </div>
@@ -1120,7 +1120,6 @@ function App() {
                 坐标 X:{position.x} Z:{position.z}
               </span>
               <span>本阶段已进行：{Math.floor(formalDurationMs / 1000)}s</span>
-              <span>自由移动并点击发光物品作答</span>
             </div>
             <ThreeScene
               items={formalSceneItems}
