@@ -5,8 +5,8 @@
 //    - 常用角度换算：90° = Math.PI / 2，180° = Math.PI，45° = Math.PI / 4。
 // 4) 建议流程：先调 position，再调 targetSize，最后微调 rotation。
 // 5) 预览页面：
-//    - 2030 初始场景：http://localhost:5200/?step=formal
-//    - 1930 终态场景：http://localhost:5200/?step=formal&all1930=1
+//    - 2030 初始场景：http://localhost:5？？？/?step=formal
+//    - 1930 终态场景：http://localhost:5？？？/?step=formal&all1930=1
 // 6) 该文件仅维护“2030 初始场景”参数；1930 终态参数请改 modelPlacement1930.ts。
 
 export type ModelPlacement2030 = {
@@ -37,7 +37,7 @@ export const MODEL_PLACEMENT_2030: ModelPlacement2030[] = [
   },
   {
     modelPath: '/assets/models/nonitr_07_2030_roboticTree_bedroom.glb',
-    position: [1, 0, -7],
+    position: [1, 0, -6],
     targetSize: 6.2,
     rotationX: 0,
     rotationY: 0,
@@ -133,15 +133,15 @@ export const MODEL_PLACEMENT_2030: ModelPlacement2030[] = [
   },
   {
     modelPath: '/assets/models/itr_10_2030_electricLighter_bedroom.glb',
-    position: [6, 1, -6.5],
-    targetSize: 1,
+    position: [-5.8,0.97, 3.5],
+    targetSize: 0.8,
     rotationX: 0,
     rotationY: Math.PI / 5,
     rotationZ: 0,
   },
   {
     modelPath: '/assets/models/itr_03_2030_holographicProjectorB_bedroom.glb',
-    position: [8, 2, 4.2],
+    position: [7.8, 2, 4.2],
     targetSize: 7.5,
     rotationX: 0,
     rotationY: Math.PI / 2,
@@ -166,7 +166,7 @@ export const MODEL_PLACEMENT_2030: ModelPlacement2030[] = [
   {
     modelPath: '/assets/models/itr_11_2030_smart_toilet_toilet.glb',
     position: [-6, 0, 12.8],
-    targetSize: 3.1,
+    targetSize: 4,
     rotationX: 0,
     rotationY: Math.PI / 2,
     rotationZ: 0,
@@ -190,38 +190,38 @@ export const MODEL_PLACEMENT_2030: ModelPlacement2030[] = [
   {
     modelPath: '/assets/models/itr_14_2030_smart_shower_system_toilet.glb',
     position: [-7.2, 4.6, 16],
-    targetSize: 4.4,
+    targetSize: 6,
     rotationX: 0,
     rotationY: Math.PI / 2,
     rotationZ: 0,
   },
   {
     modelPath: '/assets/models/itr_15_2030_smart_washbasin_toilet.glb',
-    position: [-2.8, 0.1, 15.6],
-    targetSize: 4.6,
+    position: [-2.8, 1, 15.6],
+    targetSize: 6,
     rotationX: 0,
     rotationY: -Math.PI / 2,
     rotationZ: 0,
   },
   {
     modelPath: '/assets/models/itr_16_2030_smart_refrigerator_kitchen.glb',
-    position: [14.2, 0, -7],
-    targetSize: 5.8,
+    position: [9.5, 0,1],
+    targetSize: 5,
     rotationX: 0,
-    rotationY: -Math.PI / 2,
+    rotationY: Math.PI,
     rotationZ: 0,
   },
   {
     modelPath: '/assets/models/itr_17_2030_smart_rice_cooker_kitchen.glb',
-    position: [12.5, 1.5, -0.6],
+    position: [14, 2.7, 1],
     targetSize: 1.8,
     rotationX: 0,
-    rotationY: -Math.PI / 2,
+    rotationY: -Math.PI/2,
     rotationZ: 0,
   },
   {
     modelPath: '/assets/models/itr_18_2030_robot_vacuum_cleaner_kitchen.glb',
-    position: [10.2, 0.1, -3],
+    position: [9.5, 0, -7],
     targetSize: 1.6,
     rotationX: 0,
     rotationY: 0,
@@ -229,34 +229,34 @@ export const MODEL_PLACEMENT_2030: ModelPlacement2030[] = [
   },
   {
     modelPath: '/assets/models/itr_19_2030_smart_kettle_kitchen.glb',
-    position: [9.4, 1.4, -6.3],
-    targetSize: 1.6,
+    position: [13.8, 2.7, -7],
+    targetSize: 1,
     rotationX: 0,
-    rotationY: Math.PI / 2,
+    rotationY: -Math.PI / 5,
     rotationZ: 0,
   },
   {
     modelPath: '/assets/models/itr_20_2030_microwave_oven_kitchen.glb',
-    position: [11.1, 1.8, -7.1],
-    targetSize: 2.2,
+    position: [14, 2.7,-3.8],
+    targetSize: 3,
     rotationX: 0,
-    rotationY: Math.PI,
+    rotationY: -Math.PI/2,
     rotationZ: 0,
   },
   {
     modelPath: '/assets/models/nonitr_08_2030_stove_hood_kitchen.glb',
-    position: [12.2, 0, -7.5],
-    targetSize: 7.2,
+    position: [14, 0, -3],
+    targetSize: 12,
     rotationX: 0,
-    rotationY: -Math.PI / 2,
+    rotationY: -Math.PI/2,
     rotationZ: 0,
   },
   {
     modelPath: '/assets/models/nonitr_09_2030_window_kitchen.glb',
-    position: [15.8, 2.4, -2.4],
+    position: [15, 3.6, -5.1],
     targetSize: 5.2,
     rotationX: 0,
-    rotationY: Math.PI,
+    rotationY: -Math.PI/2,
     rotationZ: 0,
   },
 ]

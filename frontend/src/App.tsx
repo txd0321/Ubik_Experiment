@@ -1025,6 +1025,7 @@ function App() {
               onActiveItemsChange={setPracticeActiveItemIds}
               scenePreset="practice"
               interactionLocked={practicePanelOpen}
+              showAxesHelper
               renderUnusedSlots={false}
               initialCameraPosition={[-1.5, 2.4, 5.6]}
               initialTarget={[-3.2, 1.25, 3.5]}
@@ -1126,6 +1127,7 @@ function App() {
               items={formalSceneItems}
               onItemClick={handleFormalItemClick}
               interactionLocked={Boolean(formalPanelItem)}
+              showAxesHelper
               forceHistoricModels={allHistoricPreview}
               initialCameraPosition={[7, 5, -7]}
               initialTarget={[7, 5, -2]}
