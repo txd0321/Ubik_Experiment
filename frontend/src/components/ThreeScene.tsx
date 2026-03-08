@@ -1237,14 +1237,14 @@ export default function ThreeScene({
         }
 
         if (!forceHistoricModels && visual.transitioningToHistoric && visual.clickable) {
-          const TRANSITION_SPEED = 0.9
+          const transitionSpeed = visual.isInteractive ? 1.8 : 0.4
           const currentScale = visual.clickable.scale.x
-          const nextScale = Math.max(0.001, currentScale - delta * TRANSITION_SPEED)
+          const nextScale = Math.max(0.001, currentScale - delta * transitionSpeed)
           visual.clickable.scale.setScalar(nextScale)
 
           if (visual.futureModel) {
             const targetScale = (visual.futureModel.userData.fittedScale as number) ?? 1
-            const histScale = Math.min(targetScale, visual.futureModel.scale.x + delta * TRANSITION_SPEED)
+            const histScale = Math.min(targetScale, visual.futureModel.scale.x + delta * transitionSpeed)
             visual.futureModel.scale.setScalar(histScale)
 
             if (histScale >= targetScale && nextScale <= 0.02) {
