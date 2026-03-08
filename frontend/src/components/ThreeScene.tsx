@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+import { DEFAULT_ITEM_CONFIGS, type ItemPlacementConfig } from '../config/modelPlacement'
 
 type SceneItem = {
   id: string
@@ -22,6 +24,8 @@ type ThreeSceneProps = {
   initialTarget?: [number, number, number]
   scenePreset?: 'default' | 'practice'
   interactionLocked?: boolean
+  itemConfigs?: ItemPlacementConfig[]
+  forceHistoricModels?: boolean
 }
 
 const ROOM_SIZE = 16
@@ -29,203 +33,6 @@ const ROOM_HEIGHT = 8
 const CAMERA_EYE_HEIGHT = ROOM_HEIGHT / 2
 const INTERACT_DISTANCE = 4.2
 const GLOBAL_MODEL_SCALE = 0.9
-
-type ItemPlacementConfig = {
-  modelPath: string
-  position: [number, number, number]
-  targetSize: number
-  rotationY: number
-  rotationZ?: number
-}
-
-// 手动调参区：统一管理所有模型的坐标/缩放/Y轴旋转
-const ITEM_CONFIGS: ItemPlacementConfig[] = [
-  {
-    modelPath: '/assets/models/itr_09_2030_airConditioner_bedroom.glb',
-    position: [-7.5, 6, 4],
-    targetSize: 6,
-    rotationY: Math.PI/2,
-  },
-  {
-    modelPath: '/assets/models/itr_08_2030_coffeeMachine_bedroom.glb',
-    position: [-7, 2, -7],
-    targetSize: 3.2,
-    rotationY: 0,
-  },
-  {
-    modelPath: '/assets/models/nonitr_07_2030_roboticTree_bedroom.glb',
-    position: [1, 0, -7],
-    targetSize: 6.2,
-    rotationY: 0,
-  },
-  {
-    modelPath: '/assets/models/itr_07_2030_digitalWallet_bedroom.glb',
-    position: [-2,1, 5.4],
-    targetSize: 1.1,
-    rotationY: Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/nonitr_06_2030_frontDoor_bedroom.glb',
-    position: [6, 0, -8],
-    targetSize: 8,
-    rotationY: 0,
-  },
-  {
-    modelPath: '/assets/models/itr_06_2030_smartPhone_bedroom.glb',
-    position: [-6, 2, -5],
-    targetSize: 1.2,
-    rotationY: 0,
-  },
-  {
-    modelPath: '/assets/models/itr_05_2030_laptop_bedroom.glb',
-    position: [-4, 2, -5.6],
-    targetSize: 2,
-    rotationY: 0,
-  },
-  {
-    modelPath: '/assets/models/itr_02_2030_soundbox_bedroom.glb',
-    position: [-6.8, 6, -7.5],
-    targetSize: 2.4,
-    rotationY: 0.5,
-  },
-  {
-    modelPath: '/assets/models/nonitr_01_2030_table_bedroom.glb',
-    position: [-4.8, 0, -5.7],
-    targetSize: 7,
-    rotationY: 0,
-  },
-  {
-    modelPath: '/assets/models/itr_01_2030_spray_bedroom.glb',
-    position: [-3, 1.45, 5.5],
-    targetSize: 1.5,
-    rotationY: 0,
-    rotationZ: -Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/nonitr_04_2030_chair_bedroom.glb',
-    position: [-5, 0, -1.5],
-    targetSize: 4,
-    rotationY: Math.PI*5/6,
-  },
-  {
-    modelPath: '/assets/models/nonitr_05_2030_sofa_bedroom.glb',
-    position: [-6.5, 0, 4.5],
-    targetSize: 6.5,
-    rotationY: Math.PI/2,
-  },
-  {
-    modelPath: '/assets/models/nonitr_02_2030_bed_bedroom.glb',
-    position: [4.6, 0,4.6],
-    targetSize: 7.5,
-    rotationY: -Math.PI / 1,
-  },
-  // ===== 新增模型手动调参（和上面同格式）=====
-  {
-    modelPath: '/assets/models/nonitr_03_2030_teaTable_bedroom.glb',
-    position: [-2.5, 0, 4.5],
-    targetSize: 4,
-    rotationY: Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_10_2030_electricLighter_bedroom.glb',
-    position: [6, 1, -6.5],
-    targetSize: 1,
-    rotationY: Math.PI / 5,
-  },
-  {
-    modelPath: '/assets/models/itr_03_2030_holographicProjectorB_bedroom.glb',
-    position: [8, 2, 4.2],
-    targetSize: 7.5,
-    rotationY: Math.PI/2,
-  },
-  {
-    modelPath: '/assets/models/itr_03_2030_holographicProjectorA_bedroom.glb',
-    position: [-1.8, 1.02, 3.6],
-    targetSize: 1.4,
-    rotationY: Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_04_2030_smartLight_bedroom.glb',
-    position: [1, 6, -7.5],
-    targetSize: 1.6,
-    rotationY: 0,
-  },
-  // ===== 厕所（11-15） =====
-  {
-    modelPath: '/assets/models/itr_11_2030_smart_toilet_toilet.glb',
-    position: [-6, 0, 12.8],
-    targetSize: 3.1,
-    rotationY: Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_12_2030_sonic_toothbrush_toilet.glb',
-    position: [-4.3, 1.05, 9.4],
-    targetSize: 1.2,
-    rotationY: Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_13_2030_hair_dryer_toilet.glb',
-    position: [-2.3, 1.25, 10.6],
-    targetSize: 1.4,
-    rotationY: -Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_14_2030_smart_shower_system_toilet.glb',
-    position: [-7.2, 4.6, 16],
-    targetSize: 4.4,
-    rotationY: Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_15_2030_smart_washbasin_toilet.glb',
-    position: [-2.8, 0.1, 15.6],
-    targetSize: 4.6,
-    rotationY: -Math.PI / 2,
-  },
-  // ===== 厨房（16-20） =====
-  {
-    modelPath: '/assets/models/itr_16_2030_smart_refrigerator_kitchen.glb',
-    position: [14.2, 0, -7],
-    targetSize: 5.8,
-    rotationY: -Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_17_2030_smart_rice_cooker_kitchen.glb',
-    position: [12.5, 1.5, -0.6],
-    targetSize: 1.8,
-    rotationY: -Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_18_2030_robot_vacuum_cleaner_kitchen.glb',
-    position: [10.2, 0.1, -3],
-    targetSize: 1.6,
-    rotationY: 0,
-  },
-  {
-    modelPath: '/assets/models/itr_19_2030_smart_kettle_kitchen.glb',
-    position: [9.4, 1.4, -6.3],
-    targetSize: 1.6,
-    rotationY: Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/itr_20_2030_microwave_oven_kitchen.glb',
-    position: [11.1, 1.8, -7.1],
-    targetSize: 2.2,
-    rotationY: Math.PI,
-  },
-  // ===== 厨房非交互（nonitr_08-09） =====
-  {
-    modelPath: '/assets/models/nonitr_08_2030_stove_hood_kitchen.glb',
-    position: [12.2, 0, -7.5],
-    targetSize: 7.2,
-    rotationY: -Math.PI / 2,
-  },
-  {
-    modelPath: '/assets/models/nonitr_09_2030_window_kitchen.glb',
-    position: [15.8, 2.4, -2.4],
-    targetSize: 5.2,
-    rotationY: Math.PI,
-  },
-]
 
 type ItemVisual = {
   id: string
@@ -265,52 +72,14 @@ type SceneCore = {
 const EXTRA_ITEM_ID_PREFIX = '__extra_slot_'
 
 const NO_GREEN_MODEL_PATHS = new Set([
-  '/assets/models/2030_chair.glb',
-  '/assets/models/2030_sofa.glb',
-  '/assets/models/2030_bed.glb',
-  '/assets/models/2030_tea_table.glb',
-  '/assets/models/2030_lighter.glb',
-  '/assets/models/2030_projecter_01.glb',
-  '/assets/models/2030_projecter_02.glb',
+  '/assets/models/nonitr_04_2030_chair_bedroom.glb',
+  '/assets/models/nonitr_05_2030_sofa_bedroom.glb',
+  '/assets/models/nonitr_02_2030_bed_bedroom.glb',
+  '/assets/models/nonitr_03_2030_teaTable_bedroom.glb',
+  '/assets/models/itr_10_2030_electricLighter_bedroom.glb',
+  '/assets/models/itr_03_2030_holographicProjectorA_bedroom.glb',
+  '/assets/models/itr_03_2030_holographicProjectorB_bedroom.glb',
 ])
-
-const HISTORIC_MODEL_BY_SLOT: Partial<Record<number, string>> = {
-  // 卧室（1-10）
-  0: '/assets/models/itr_09_1930_heating_bedroom.glb',
-  1: '/assets/models/itr_08_1930_handmadeCoffeeTools_bedroom.glb',
-  3: '/assets/models/itr_07_1930_purse_bedroom.glb',
-  5: '/assets/models/itr_06_1930_envelope_bedroom.glb',
-  6: '/assets/models/itr_05_1930_typewriter_bedroom.glb',
-  7: '/assets/models/itr_02_1930_phonograph_bedroom.glb',
-  9: '/assets/models/itr_01_1930_spray_bedroom.glb',
-  14: '/assets/models/itr_10_1930_matchstick_bedroom.glb',
-  // 03：A/B 合并交互后统一替换为 radio
-  16: '/assets/models/itr_03_1930_radio_bedroom.glb',
-  17: '/assets/models/itr_04_1930_keroseneLamp_bedroom.glb',
-  // 卧室非交互（1-7）
-  8: '/assets/models/nonitr_01_1930_table_bedroom.glb',
-  12: '/assets/models/nonitr_02_1930_bed_bedroom.glb',
-  13: '/assets/models/nonitr_03_1930_teaTable_bedroom.glb',
-  10: '/assets/models/nonitr_04_1930_chair_bedroom.glb',
-  11: '/assets/models/nonitr_05_1930_sofa_bedroom.glb',
-  4: '/assets/models/nonitr_06_1930_frontDoor_bedroom.glb',
-  2: '/assets/models/nonitr_07_1930_pottedPlant_bedroom.glb',
-  // 厕所（11-15）
-  18: '/assets/models/itr_11_1930_sputum_bowl_toilet.glb',
-  19: '/assets/models/itr_12_1930_tooth_powder_toilet.glb',
-  20: '/assets/models/itr_13_1930_hair_dryer_toilet.glb',
-  21: '/assets/models/itr_14_1930_shower_bucket_toilet.glb',
-  22: '/assets/models/itr_15_1930_pitcher_basin_toilet.glb',
-  // 厨房（16-20）
-  23: '/assets/models/itr_16_1930_icebox_kitchen.glb',
-  24: '/assets/models/itr_17_1930_iron_pot_kitchen.glb',
-  25: '/assets/models/itr_18_1930_broom_dustpan_kitchen.glb',
-  26: '/assets/models/itr_19_1930_copper_kettle_kitchen.glb',
-  27: '/assets/models/itr_20_1930_stove_fire_kitchen.glb',
-  // 厨房非交互（8-9）
-  28: '/assets/models/nonitr_08_1930_cupboard_chimney_kitchen.glb',
-  29: '/assets/models/nonitr_09_1930_window_kitchen.glb',
-}
 
 function fitModelToTarget(model: THREE.Object3D, targetSize = 1.1) {
   const box = new THREE.Box3().setFromObject(model)
@@ -408,6 +177,8 @@ export default function ThreeScene({
   initialTarget,
   scenePreset = 'default',
   interactionLocked = false,
+  itemConfigs = DEFAULT_ITEM_CONFIGS,
+  forceHistoricModels = false,
 }: ThreeSceneProps) {
   const mountRef = useRef<HTMLDivElement | null>(null)
   const coreRef = useRef<SceneCore | null>(null)
@@ -957,13 +728,29 @@ export default function ThreeScene({
     const slotById = new Map<string, number>()
 
     const gltfLoader = new GLTFLoader()
-    const modelCache = new Map<number, THREE.Object3D>()
+    const dracoLoader = new DRACOLoader()
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
+    gltfLoader.setDRACOLoader(dracoLoader)
+    const modelCache = new Map<string, THREE.Object3D>()
     const historicModelCache = new Map<number, THREE.Object3D>()
 
+    const loadGltfWithFallback = async (path: string) => {
+      try {
+        return await gltfLoader.loadAsync(path)
+      } catch {
+        const fileName = path.split('/').pop()
+        if (!fileName) throw new Error('invalid model path')
+        const backupPath = `/assets/models/_backup_original_glb/${fileName}`
+        return await gltfLoader.loadAsync(backupPath)
+      }
+    }
+
     const loadModelIntoVisual = async (visual: ItemVisual) => {
-      const config = ITEM_CONFIGS[visual.slot]
-      const modelPath = config?.modelPath
+      const config = itemConfigs[visual.slot]
+      const modelPath2030 = config?.modelPath
+      const modelPath1930 = config?.historicModelPath
       if (!config) return
+      const activeModelPath = forceHistoricModels ? modelPath1930 : modelPath2030
 
       if (scenePreset === 'practice') {
         if (!visualsById.has(visual.id)) return
@@ -993,22 +780,28 @@ export default function ThreeScene({
         return
       }
 
-      if (!modelPath) return
+      if (!activeModelPath) return
 
       try {
-        let model = modelCache.get(visual.slot)
+        const cacheKey = `${visual.slot}:${activeModelPath}`
+        let model = modelCache.get(cacheKey)
         if (!model) {
-          const gltf = await gltfLoader.loadAsync(modelPath)
+          const gltf = await loadGltfWithFallback(activeModelPath)
           model = gltf.scene
-          modelCache.set(visual.slot, model)
+          modelCache.set(cacheKey, model)
         }
 
         if (!visualsById.has(visual.id)) return
 
         const modelInstance = model.clone(true)
-        fitModelToTarget(modelInstance, config.targetSize * modelScaleMultiplier * GLOBAL_MODEL_SCALE)
-        modelInstance.rotation.y = config.rotationY
-        modelInstance.rotation.z = config.rotationZ ?? 0
+        const targetSize = forceHistoricModels ? (config.historicTargetSize ?? config.targetSize) : config.targetSize
+        const rotX = forceHistoricModels ? (config.historicRotationX ?? config.rotationX ?? 0) : (config.rotationX ?? 0)
+        const rotY = forceHistoricModels ? (config.historicRotationY ?? config.rotationY) : config.rotationY
+        const rotZ = forceHistoricModels ? (config.historicRotationZ ?? config.rotationZ ?? 0) : (config.rotationZ ?? 0)
+        fitModelToTarget(modelInstance, targetSize * modelScaleMultiplier * GLOBAL_MODEL_SCALE)
+        modelInstance.rotation.x = rotX
+        modelInstance.rotation.y = rotY
+        modelInstance.rotation.z = rotZ
 
         if (visual.placeholder) {
           visual.root.remove(visual.placeholder)
@@ -1028,9 +821,9 @@ export default function ThreeScene({
 
     const loadHistoricModelIntoVisual = async (visual: ItemVisual) => {
       if (scenePreset === 'practice') return
-      const config = ITEM_CONFIGS[visual.slot]
+      const config = itemConfigs[visual.slot]
       if (!config || visual.futureModel || visual.hasSwitchedToHistoric || visual.loadingHistoricModel) return
-      const historicPath = HISTORIC_MODEL_BY_SLOT[visual.slot]
+      const historicPath = config.historicModelPath
       if (!historicPath) return
 
       visual.loadingHistoricModel = true
@@ -1038,7 +831,7 @@ export default function ThreeScene({
       try {
         let model = historicModelCache.get(visual.slot)
         if (!model) {
-          const gltf = await gltfLoader.loadAsync(historicPath)
+          const gltf = await loadGltfWithFallback(historicPath)
           model = gltf.scene
           historicModelCache.set(visual.slot, model)
         }
@@ -1047,6 +840,7 @@ export default function ThreeScene({
 
         const modelInstance = model.clone(true)
         fitModelToTarget(modelInstance, config.targetSize * modelScaleMultiplier * GLOBAL_MODEL_SCALE)
+        modelInstance.rotation.x = config.rotationX ?? 0
         modelInstance.rotation.y = config.rotationY
         modelInstance.rotation.z = config.rotationZ ?? 0
         modelInstance.scale.setScalar(0.001)
@@ -1061,9 +855,10 @@ export default function ThreeScene({
     }
 
     const createItemVisual = (item: SceneItem, slot: number) => {
-      const config = ITEM_CONFIGS[slot]
+      const config = itemConfigs[slot]
       if (!config) return
-      const [x, y, z] = config.position
+      const rootPos = forceHistoricModels && config.historicPosition ? config.historicPosition : config.position
+      const [x, y, z] = rootPos
       const suppressAnsweredGreen = NO_GREEN_MODEL_PATHS.has(config.modelPath)
 
       const root = new THREE.Group()
@@ -1097,7 +892,7 @@ export default function ThreeScene({
       glowHalo.visible = false
       root.add(glowHalo)
 
-      const targetSize = ITEM_CONFIGS[slot]?.targetSize ?? 1
+      const targetSize = itemConfigs[slot]?.targetSize ?? 1
       const haloBaseScale = THREE.MathUtils.clamp(0.62 + targetSize * 0.06, 0.72, 1.15)
       const haloPulseAmplitude = THREE.MathUtils.clamp(0.06 + targetSize * 0.012, 0.07, 0.15)
 
@@ -1131,7 +926,7 @@ export default function ThreeScene({
     }
 
     itemsRef.current.forEach((item, index) => {
-      const slot = item.slotOverride ?? (index % ITEM_CONFIGS.length)
+      const slot = item.slotOverride ?? (index % itemConfigs.length)
       slotById.set(item.id, slot)
       createItemVisual(item, slot)
     })
@@ -1139,7 +934,7 @@ export default function ThreeScene({
     if (renderUnusedSlots) {
       // 对于配置中未被题目 items 占用的槽位，也渲染为静态模型，便于手动调参预览
       const usedSlots = new Set<number>(Array.from(slotById.values()))
-      ITEM_CONFIGS.forEach((_, slot) => {
+      itemConfigs.forEach((_, slot) => {
         if (usedSlots.has(slot)) return
         createItemVisual(
           {
@@ -1350,11 +1145,11 @@ export default function ThreeScene({
           haloMat.opacity = 0.1 + pulse * 0.1
         }
 
-        if (visual.answered && !visual.futureModel && !visual.hasSwitchedToHistoric) {
+        if (!forceHistoricModels && visual.answered && !visual.futureModel && !visual.hasSwitchedToHistoric) {
           void loadHistoricModelIntoVisual(visual)
         }
 
-        if (visual.transitioningToHistoric && visual.clickable) {
+        if (!forceHistoricModels && visual.transitioningToHistoric && visual.clickable) {
           const TRANSITION_SPEED = 0.9
           const currentScale = visual.clickable.scale.x
           const nextScale = Math.max(0.001, currentScale - delta * TRANSITION_SPEED)
@@ -1449,6 +1244,7 @@ export default function ThreeScene({
       controls.dispose()
       pmremGenerator.dispose()
       envRT.dispose()
+      dracoLoader.dispose()
 
       scene.traverse((obj) => {
         const mesh = obj as THREE.Mesh
@@ -1508,7 +1304,7 @@ export default function ThreeScene({
     })
 
     items.forEach((item, index) => {
-      const slot = core.slotById.get(item.id) ?? item.slotOverride ?? (index % ITEM_CONFIGS.length)
+      const slot = core.slotById.get(item.id) ?? item.slotOverride ?? (index % itemConfigs.length)
       if (!core.slotById.has(item.id)) {
         core.slotById.set(item.id, slot)
       }

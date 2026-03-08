@@ -345,6 +345,10 @@ function isForceAllCompletedEnabled() {
   return new URLSearchParams(window.location.search).get('forceAllCompleted') === '1'
 }
 
+function isAllHistoricPreviewEnabled() {
+  return new URLSearchParams(window.location.search).get('all1930') === '1'
+}
+
 function App() {
   const [step, setStep] = useState<Step>(() => getInitialStepFromQuery())
   const [sessionId, setSessionId] = useState('')
@@ -367,6 +371,7 @@ function App() {
   const [formalCompleted, setFormalCompleted] = useState(false)
   const [showFormalExitButton, setShowFormalExitButton] = useState(() => isFormalExitPreviewEnabled())
   const [forceAllCompletedPreview] = useState(() => isForceAllCompletedEnabled())
+  const [allHistoricPreview] = useState(() => isAllHistoricPreviewEnabled())
 
   const [surveyData, setSurveyData] = useState<SurveyData>({
     taskDifficulty: '',
@@ -798,7 +803,7 @@ function App() {
       const mainItems = FORMAL_ITEMS.map((item) => ({
         id: item.id,
         name: item.name,
-        answered: formalAnsweredIds.has(item.id),
+        answered: allHistoricPreview || formalAnsweredIds.has(item.id),
         slotOverride: slotOverrides[item.id],
       }))
 
@@ -806,12 +811,12 @@ function App() {
       mainItems.push({
         id: 'holographic-projector-buddy',
         name: '全息投影仪（B）',
-        answered: formalAnsweredIds.has('holographic-projector'),
+        answered: allHistoricPreview || formalAnsweredIds.has('holographic-projector'),
         slotOverride: 15,
       })
 
       // PRD 248-269：nonitr 需在场景中展示，并在全完成后切换到 1930
-      const nonInteractiveAnswered = forceAllCompletedPreview || formalCompleted
+      const nonInteractiveAnswered = forceAllCompletedPreview || formalCompleted || allHistoricPreview
       mainItems.push(
         // 卧室 nonitr（1-7）
         {
@@ -873,7 +878,7 @@ function App() {
 
       return mainItems
     },
-    [formalAnsweredIds, formalCompleted, forceAllCompletedPreview],
+    [formalAnsweredIds, formalCompleted, forceAllCompletedPreview, allHistoricPreview],
   )
 
   const handlePracticeItemClick = useCallback(() => {
@@ -1121,6 +1126,7 @@ function App() {
               items={formalSceneItems}
               onItemClick={handleFormalItemClick}
               interactionLocked={Boolean(formalPanelItem)}
+              forceHistoricModels={allHistoricPreview}
               initialCameraPosition={[7, 5, -7]}
               initialTarget={[7, 5, -2]}
             />
