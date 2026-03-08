@@ -58,7 +58,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
   },
   {
     historicModelPath: '/assets/models/itr_06_1930_envelope_bedroom.glb',
-    historicPosition: [-6, 3, -4.5],
+    historicPosition: [-6, 2, -4.5],
     historicTargetSize: 1,
     historicRotationX: Math.PI / 2,
     historicRotationY: 0,
@@ -218,10 +218,10 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
   },
   {
     historicModelPath: '/assets/models/itr_18_1930_broom_dustpan_kitchen.glb',
-    historicPosition: [8.8, 0.1, -7],
-    historicTargetSize: 1.3,
+    historicPosition: [9, 0, -7],
+    historicTargetSize: 2,
     historicRotationX: 0,
-    historicRotationY: 0,
+    historicRotationY: Math.PI / 2,
     historicRotationZ: 0,
   },
   {

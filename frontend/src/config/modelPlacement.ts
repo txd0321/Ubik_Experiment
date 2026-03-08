@@ -16,10 +16,9 @@ export type ItemPlacementConfig = {
   historicRotationZ?: number
 }
 
-if (MODEL_PLACEMENT_2030.length !== MODEL_PLACEMENT_1930.length) {
-  throw new Error(
-    `Model placement length mismatch: 2030=${MODEL_PLACEMENT_2030.length}, 1930=${MODEL_PLACEMENT_1930.length}`,
-  )
+function extractPlacementKey(modelPath: string) {
+  const match = modelPath.match(/\/(?:assets\/models\/)?((?:itr|nonitr)_\d+)_/)
+  return match?.[1] ?? modelPath
 }
 
 function mergePlacementConfig(
@@ -42,6 +41,29 @@ function mergePlacementConfig(
   }
 }
 
-export const DEFAULT_ITEM_CONFIGS: ItemPlacementConfig[] = MODEL_PLACEMENT_2030.map((future, index) =>
-  mergePlacementConfig(future, MODEL_PLACEMENT_1930[index]),
-)
+const historicBuckets = new Map<string, ModelPlacement1930[]>()
+
+MODEL_PLACEMENT_1930.forEach((historic) => {
+  const key = extractPlacementKey(historic.historicModelPath)
+  const list = historicBuckets.get(key) ?? []
+  list.push(historic)
+  historicBuckets.set(key, list)
+})
+
+export const DEFAULT_ITEM_CONFIGS: ItemPlacementConfig[] = MODEL_PLACEMENT_2030.map((future) => {
+  const key = extractPlacementKey(future.modelPath)
+  const bucket = historicBuckets.get(key)
+  const historic = bucket?.shift()
+
+  if (!historic) {
+    throw new Error(`Missing matched 1930 config for 2030 model: ${future.modelPath}`)
+  }
+
+  return mergePlacementConfig(future, historic)
+})
+
+const leftovers = Array.from(historicBuckets.entries()).filter(([, list]) => list.length > 0)
+if (leftovers.length > 0) {
+  const detail = leftovers.map(([key, list]) => `${key}:${list.length}`).join(', ')
+  throw new Error(`Unused 1930 placement config entries detected: ${detail}`)
+}

@@ -297,17 +297,56 @@ export default function ThreeScene({
     wallMetalnessMap.wrapT = THREE.RepeatWrapping
     wallMetalnessMap.repeat.copy(wallpaperMap.repeat)
 
+    const wall1930BaseMap = textureLoader.load('/assets/textures/scuffed_cement_diff_4k.jpg')
+    wall1930BaseMap.colorSpace = THREE.SRGBColorSpace
+    wall1930BaseMap.wrapS = THREE.RepeatWrapping
+    wall1930BaseMap.wrapT = THREE.RepeatWrapping
+    wall1930BaseMap.repeat.set(15.0, 15.0)
+
+    const wall1930HeightMap = textureLoader.load('/assets/textures/scuffed_cement_disp_4k.png')
+    wall1930HeightMap.wrapS = THREE.RepeatWrapping
+    wall1930HeightMap.wrapT = THREE.RepeatWrapping
+    wall1930HeightMap.repeat.copy(wall1930BaseMap.repeat)
+
     const floorNormalMap = textureLoader.load('/assets/textures/floor_normal.png')
     floorNormalMap.wrapS = THREE.RepeatWrapping
     floorNormalMap.wrapT = THREE.RepeatWrapping
     floorNormalMap.repeat.set(4, 4)
+
+    const floor2030BaseMap = textureLoader.load('/assets/textures/granite_tile_diff_4k.jpg')
+    floor2030BaseMap.colorSpace = THREE.SRGBColorSpace
+    floor2030BaseMap.wrapS = THREE.RepeatWrapping
+    floor2030BaseMap.wrapT = THREE.RepeatWrapping
+    floor2030BaseMap.repeat.set(1, 1)
+
+    const floor2030HeightMap = textureLoader.load('/assets/textures/granite_tile_disp_4k.png')
+    floor2030HeightMap.wrapS = THREE.RepeatWrapping
+    floor2030HeightMap.wrapT = THREE.RepeatWrapping
+    floor2030HeightMap.repeat.set(1, 1)
+
+    const floor1930BaseMap = textureLoader.load('/assets/textures/floor_1930_bedroom_basecolor.jpg')
+    floor1930BaseMap.colorSpace = THREE.SRGBColorSpace
+    floor1930BaseMap.wrapS = THREE.RepeatWrapping
+    floor1930BaseMap.wrapT = THREE.RepeatWrapping
+    floor1930BaseMap.repeat.set(4, 4)
+
+    const floor1930HeightMap = textureLoader.load('/assets/textures/floor_1930_bedroom_height.png')
+    floor1930HeightMap.wrapS = THREE.RepeatWrapping
+    floor1930HeightMap.wrapT = THREE.RepeatWrapping
+    floor1930HeightMap.repeat.set(4, 4)
 
     const maxAnisotropy = renderer.capabilities.getMaxAnisotropy()
     wallpaperMap.anisotropy = maxAnisotropy
     wallNormalMap.anisotropy = maxAnisotropy
     wallRoughnessMap.anisotropy = maxAnisotropy
     wallMetalnessMap.anisotropy = maxAnisotropy
+    wall1930BaseMap.anisotropy = maxAnisotropy
+    wall1930HeightMap.anisotropy = maxAnisotropy
     floorNormalMap.anisotropy = maxAnisotropy
+    floor2030BaseMap.anisotropy = maxAnisotropy
+    floor2030HeightMap.anisotropy = maxAnisotropy
+    floor1930BaseMap.anisotropy = maxAnisotropy
+    floor1930HeightMap.anisotropy = maxAnisotropy
 
     const roomMaterial = new THREE.MeshStandardMaterial({
       color: 0xffffff,
@@ -322,6 +361,7 @@ export default function ThreeScene({
       emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
       side: THREE.DoubleSide,
     })
+    const wallAndCeilingMaterials: THREE.MeshStandardMaterial[] = [roomMaterial]
     if (scenePreset === 'practice') {
       const room = new THREE.Mesh(new THREE.BoxGeometry(ROOM_SIZE, ROOM_HEIGHT, ROOM_SIZE), roomMaterial)
       room.position.y = ROOM_HEIGHT / 2
@@ -367,21 +407,24 @@ export default function ThreeScene({
       southRight.position.set(2.75, ROOM_HEIGHT / 2, ROOM_SIZE / 2)
       wallGroup.add(southRight)
 
+      const mainCeilingMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: scenePreset === 'practice' ? null : wallpaperMap,
+        normalMap: scenePreset === 'practice' ? null : wallNormalMap,
+        normalScale: new THREE.Vector2(0.22, 0.22),
+        roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
+        metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
+        roughness: scenePreset === 'practice' ? 0.95 : 0.62,
+        metalness: scenePreset === 'practice' ? 0.02 : 0.18,
+        emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
+        emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
+        side: THREE.FrontSide,
+      })
+      wallAndCeilingMaterials.push(mainCeilingMaterial)
+
       const ceiling = new THREE.Mesh(
         new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE),
-        new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          map: scenePreset === 'practice' ? null : wallpaperMap,
-          normalMap: scenePreset === 'practice' ? null : wallNormalMap,
-          normalScale: new THREE.Vector2(0.22, 0.22),
-          roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
-          metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
-          roughness: scenePreset === 'practice' ? 0.95 : 0.62,
-          metalness: scenePreset === 'practice' ? 0.02 : 0.18,
-          emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
-          emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
-          side: THREE.FrontSide,
-        }),
+        mainCeilingMaterial,
       )
       ceiling.rotation.x = Math.PI / 2
       ceiling.position.set(0, ROOM_HEIGHT, 0)
@@ -412,6 +455,9 @@ export default function ThreeScene({
       scene.add(wallGroup)
     }
 
+    let extFloorMaterial: THREE.MeshStandardMaterial | null = null
+    let kitchenDoorFrameMaterial: THREE.MeshStandardMaterial | null = null
+
     // Step2 三空间：主房间为卧室；厨房由(8,0,-5)门洞外扩6x5；厕所由(-5,0,8)门洞外扩6x6
     if (scenePreset === 'default') {
       const partitionMaterial = new THREE.MeshStandardMaterial({
@@ -426,9 +472,13 @@ export default function ThreeScene({
         emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
         emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
       })
+      wallAndCeilingMaterials.push(partitionMaterial)
 
-      const extFloorMaterial = new THREE.MeshStandardMaterial({
-        color: 0x000000,
+      extFloorMaterial = new THREE.MeshStandardMaterial({
+        color: 0x8a8a8a,
+        map: floor2030BaseMap,
+        bumpMap: floor2030HeightMap,
+        bumpScale: 0.12,
         roughness: 0.95,
         metalness: 0.02,
       })
@@ -441,21 +491,24 @@ export default function ThreeScene({
       scene.add(kitchenFloor)
 
       // 厨房天花板
+      const kitchenCeilingMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: scenePreset === 'practice' ? null : wallpaperMap,
+        normalMap: scenePreset === 'practice' ? null : wallNormalMap,
+        normalScale: new THREE.Vector2(0.22, 0.22),
+        roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
+        metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
+        roughness: scenePreset === 'practice' ? 0.95 : 0.62,
+        metalness: scenePreset === 'practice' ? 0.02 : 0.18,
+        emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
+        emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
+        side: THREE.FrontSide,
+      })
+      wallAndCeilingMaterials.push(kitchenCeilingMaterial)
+
       const kitchenCeiling = new THREE.Mesh(
         new THREE.PlaneGeometry(8, 10),
-        new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          map: scenePreset === 'practice' ? null : wallpaperMap,
-          normalMap: scenePreset === 'practice' ? null : wallNormalMap,
-          normalScale: new THREE.Vector2(0.22, 0.22),
-          roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
-          metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
-          roughness: scenePreset === 'practice' ? 0.95 : 0.62,
-          metalness: scenePreset === 'practice' ? 0.02 : 0.18,
-          emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
-          emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
-          side: THREE.FrontSide,
-        }),
+        kitchenCeilingMaterial,
       )
       kitchenCeiling.rotation.x = Math.PI / 2
       kitchenCeiling.position.set(12, ROOM_HEIGHT, -3)
@@ -469,21 +522,24 @@ export default function ThreeScene({
       scene.add(toiletFloor)
 
       // 厕所天花板
+      const toiletCeilingMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: scenePreset === 'practice' ? null : wallpaperMap,
+        normalMap: scenePreset === 'practice' ? null : wallNormalMap,
+        normalScale: new THREE.Vector2(0.22, 0.22),
+        roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
+        metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
+        roughness: scenePreset === 'practice' ? 0.95 : 0.62,
+        metalness: scenePreset === 'practice' ? 0.02 : 0.18,
+        emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
+        emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
+        side: THREE.FrontSide,
+      })
+      wallAndCeilingMaterials.push(toiletCeilingMaterial)
+
       const toiletCeiling = new THREE.Mesh(
         new THREE.PlaneGeometry(8, 10),
-        new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          map: scenePreset === 'practice' ? null : wallpaperMap,
-          normalMap: scenePreset === 'practice' ? null : wallNormalMap,
-          normalScale: new THREE.Vector2(0.22, 0.22),
-          roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
-          metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
-          roughness: scenePreset === 'practice' ? 0.95 : 0.62,
-          metalness: scenePreset === 'practice' ? 0.02 : 0.18,
-          emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
-          emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
-          side: THREE.FrontSide,
-        }),
+        toiletCeilingMaterial,
       )
       toiletCeiling.rotation.x = Math.PI / 2
       toiletCeiling.position.set(-4, ROOM_HEIGHT, 13)
@@ -514,11 +570,12 @@ export default function ThreeScene({
       kitchenBottomWall.position.set(12, ROOM_HEIGHT / 2, 2)
       scene.add(kitchenBottomWall)
 
-      const kitchenDoorFrameMaterial = new THREE.MeshStandardMaterial({
+      kitchenDoorFrameMaterial = new THREE.MeshStandardMaterial({
         color: 0xd3c9b6,
         roughness: 0.7,
         metalness: 0.05,
       })
+      wallAndCeilingMaterials.push(kitchenDoorFrameMaterial)
 
       const kitchenDoorLintel = new THREE.Mesh(
         new THREE.BoxGeometry(0.16, 0.14, 3.15),
@@ -588,12 +645,17 @@ export default function ThreeScene({
     }
 
     const floorMaterial = new THREE.MeshStandardMaterial({
-      color: scenePreset === 'practice' ? 0x000000 : 0xffffff,
+      color: scenePreset === 'practice' ? 0x000000 : 0x8a8a8a,
+      map: scenePreset === 'practice' ? null : floor2030BaseMap,
       normalMap: scenePreset === 'practice' ? null : floorNormalMap,
       normalScale: new THREE.Vector2(0.8, 0.8),
+      bumpMap: scenePreset === 'practice' ? null : floor2030HeightMap,
+      bumpScale: scenePreset === 'practice' ? 0 : 0.12,
       roughness: scenePreset === 'practice' ? 1 : 0.92,
       metalness: 0.02,
     })
+    let hasSwitchedFloorTo1930 = false
+    let hasSwitchedWallsTo1930 = false
 
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE),
@@ -607,7 +669,9 @@ export default function ThreeScene({
 
     const gridHelper = new THREE.GridHelper(ROOM_SIZE, 16, 0xffffff, 0x7a7a7a)
     gridHelper.position.y = 0.03
-    scene.add(gridHelper)
+    if (scenePreset !== 'default') {
+      scene.add(gridHelper)
+    }
 
     let axesHelper: THREE.AxesHelper | null = null
     let axisLabelsGroup: THREE.Group | null = null
@@ -850,11 +914,23 @@ export default function ThreeScene({
         if (!visualsById.has(visual.id)) return
 
         const modelInstance = model.clone(true)
-        fitModelToTarget(modelInstance, config.targetSize * modelScaleMultiplier * GLOBAL_MODEL_SCALE)
-        modelInstance.rotation.x = config.rotationX ?? 0
-        modelInstance.rotation.y = config.rotationY
-        modelInstance.rotation.z = config.rotationZ ?? 0
-        modelInstance.scale.setScalar(0.001)
+        fitModelToTarget(
+          modelInstance,
+          (config.historicTargetSize ?? config.targetSize) * modelScaleMultiplier * GLOBAL_MODEL_SCALE,
+        )
+        modelInstance.rotation.x = config.historicRotationX ?? config.rotationX ?? 0
+        modelInstance.rotation.y = config.historicRotationY ?? config.rotationY
+        modelInstance.rotation.z = config.historicRotationZ ?? config.rotationZ ?? 0
+
+        if (config.historicPosition) {
+          const [hx, hy, hz] = config.historicPosition
+          visual.root.position.set(hx, hy, hz)
+          visual.baseY = hy
+        }
+
+        const fittedScale = modelInstance.scale.x
+        modelInstance.userData.fittedScale = fittedScale
+        modelInstance.scale.setScalar(fittedScale * 0.001)
         visual.root.add(modelInstance)
         visual.futureModel = modelInstance
         visual.transitioningToHistoric = true
@@ -1167,7 +1243,7 @@ export default function ThreeScene({
           visual.clickable.scale.setScalar(nextScale)
 
           if (visual.futureModel) {
-            const targetScale = 1
+            const targetScale = (visual.futureModel.userData.fittedScale as number) ?? 1
             const histScale = Math.min(targetScale, visual.futureModel.scale.x + delta * TRANSITION_SPEED)
             visual.futureModel.scale.setScalar(histScale)
 
@@ -1205,7 +1281,67 @@ export default function ThreeScene({
 
       if (allAnswered) {
         roomMaterial.emissiveIntensity = THREE.MathUtils.lerp(roomMaterial.emissiveIntensity, 0.28, 0.02)
-        floorMaterial.color.lerp(new THREE.Color('#252525'), 0.02)
+
+        if (!hasSwitchedWallsTo1930) {
+          wallAndCeilingMaterials.forEach((material) => {
+            material.map = wall1930BaseMap
+            material.normalMap = null
+            material.roughnessMap = null
+            material.metalnessMap = null
+            material.bumpMap = wall1930HeightMap
+            material.bumpScale = 0.16
+            material.roughness = 0.88
+            material.metalness = 0.03
+            material.emissive.set('#1a140d')
+            material.emissiveIntensity = 0.06
+            material.needsUpdate = true
+          })
+
+          if (kitchenDoorFrameMaterial) {
+            const doorFrameMap = wall1930BaseMap.clone()
+            doorFrameMap.needsUpdate = true
+            doorFrameMap.wrapS = THREE.RepeatWrapping
+            doorFrameMap.wrapT = THREE.RepeatWrapping
+            doorFrameMap.repeat.set(3, 3)
+
+            const doorFrameBumpMap = wall1930HeightMap.clone()
+            doorFrameBumpMap.needsUpdate = true
+            doorFrameBumpMap.wrapS = THREE.RepeatWrapping
+            doorFrameBumpMap.wrapT = THREE.RepeatWrapping
+            doorFrameBumpMap.repeat.set(3, 3)
+
+            kitchenDoorFrameMaterial.map = doorFrameMap
+            kitchenDoorFrameMaterial.bumpMap = doorFrameBumpMap
+            kitchenDoorFrameMaterial.bumpScale = 0.16
+            kitchenDoorFrameMaterial.roughness = 0.88
+            kitchenDoorFrameMaterial.metalness = 0.03
+            kitchenDoorFrameMaterial.emissive.set('#1a140d')
+            kitchenDoorFrameMaterial.emissiveIntensity = 0.06
+            kitchenDoorFrameMaterial.needsUpdate = true
+          }
+          hasSwitchedWallsTo1930 = true
+        }
+
+        if (!hasSwitchedFloorTo1930) {
+          floorMaterial.map = floor1930BaseMap
+          floorMaterial.bumpMap = floor1930HeightMap
+          floorMaterial.bumpScale = 0.22
+          floorMaterial.needsUpdate = true
+
+          if (extFloorMaterial) {
+            extFloorMaterial.map = floor1930BaseMap
+            extFloorMaterial.bumpMap = floor1930HeightMap
+            extFloorMaterial.bumpScale = 0.22
+            extFloorMaterial.needsUpdate = true
+          }
+
+          hasSwitchedFloorTo1930 = true
+        }
+
+        floorMaterial.color.lerp(new THREE.Color('#6a6a6a'), 0.02)
+        if (extFloorMaterial) {
+          extFloorMaterial.color.lerp(new THREE.Color('#6a6a6a'), 0.02)
+        }
       }
 
       const activeIds = Array.from(visualsById.values())
