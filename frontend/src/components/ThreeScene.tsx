@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DEFAULT_ITEM_CONFIGS, type ItemPlacementConfig } from '../config/modelPlacement'
 
 type SceneItem = {
@@ -28,8 +28,13 @@ type ThreeSceneProps = {
   forceHistoricModels?: boolean
 }
 
-const ROOM_SIZE = 16
-const ROOM_HEIGHT = 8
+export type ThreeSceneHandle = {
+  getCameraState: () => { position: [number, number, number]; direction: [number, number, number] } | null
+  captureScreenshot: (width: number, height: number, quality?: number) => string
+}
+
+export const ROOM_SIZE = 16
+export const ROOM_HEIGHT = 8
 const CAMERA_EYE_HEIGHT = ROOM_HEIGHT / 2
 const INTERACT_DISTANCE = 4.2
 const GLOBAL_MODEL_SCALE = 0.9
@@ -53,6 +58,9 @@ type ItemVisual = {
   transitioningToHistoric: boolean
   hasSwitchedToHistoric: boolean
   loadingHistoricModel: boolean
+  isExtraSlot: boolean
+  prevAnswered: boolean
+  prevActive: boolean
 }
 
 type SceneCore = {
@@ -72,13 +80,13 @@ type SceneCore = {
 const EXTRA_ITEM_ID_PREFIX = '__extra_slot_'
 
 const NO_GREEN_MODEL_PATHS = new Set([
-  '/assets/models/nonitr_04_2030_chair_bedroom.glb',
-  '/assets/models/nonitr_05_2030_sofa_bedroom.glb',
-  '/assets/models/nonitr_02_2030_bed_bedroom.glb',
-  '/assets/models/nonitr_03_2030_teaTable_bedroom.glb',
-  '/assets/models/itr_10_2030_electricLighter_bedroom.glb',
-  '/assets/models/itr_03_2030_holographicProjectorA_bedroom.glb',
-  '/assets/models/itr_03_2030_holographicProjectorB_bedroom.glb',
+  '/assets/models/nonitr_04_2030_chair_bedroom_opt.glb',
+  '/assets/models/nonitr_05_2030_sofa_bedroom_opt.glb',
+  '/assets/models/nonitr_02_2030_bed_bedroom_opt.glb',
+  '/assets/models/nonitr_03_2030_teaTable_bedroom_opt.glb',
+  '/assets/models/itr_10_2030_electricLighter_bedroom_opt.glb',
+  '/assets/models/itr_03_2030_holographicProjectorA_bedroom_opt.glb',
+  '/assets/models/itr_03_2030_holographicProjectorB_bedroom_opt.glb',
 ])
 
 function fitModelToTarget(model: THREE.Object3D, targetSize = 1.1) {
@@ -101,15 +109,15 @@ function fitModelToTarget(model: THREE.Object3D, targetSize = 1.1) {
   model.position.y -= minY
 }
 
-function collectEmissiveMaterials(root: THREE.Object3D) {
+function collectEmissiveMaterials(root: THREE.Object3D, enableShadows = true) {
   const materials: THREE.MeshStandardMaterial[] = []
 
-  root.traverse((obj) => {
+  root.traverse((obj: THREE.Object3D) => {
     const mesh = obj as THREE.Mesh
     if (!mesh.isMesh) return
 
-    mesh.castShadow = true
-    mesh.receiveShadow = true
+    mesh.castShadow = enableShadows
+    mesh.receiveShadow = enableShadows
 
     const mat = mesh.material
     if (Array.isArray(mat)) {
@@ -166,7 +174,7 @@ function updateVisualAppearance(visual: ItemVisual) {
   }
 }
 
-export default function ThreeScene({
+const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeScene({
   items,
   onItemClick,
   onActiveItemsChange,
@@ -179,13 +187,41 @@ export default function ThreeScene({
   interactionLocked = false,
   itemConfigs = DEFAULT_ITEM_CONFIGS,
   forceHistoricModels = false,
-}: ThreeSceneProps) {
+}, ref) {
   const mountRef = useRef<HTMLDivElement | null>(null)
   const coreRef = useRef<SceneCore | null>(null)
   const itemsRef = useRef<SceneItem[]>(items)
   const onItemClickRef = useRef(onItemClick)
   const onActiveItemsChangeRef = useRef(onActiveItemsChange)
   const interactionLockedRef = useRef(interactionLocked)
+
+  useImperativeHandle(ref, () => ({
+    getCameraState() {
+      const core = coreRef.current
+      if (!core) return null
+      const { camera } = core
+      const direction = new THREE.Vector3()
+      camera.getWorldDirection(direction)
+      return {
+        position: [camera.position.x, camera.position.y, camera.position.z] as [number, number, number],
+        direction: [direction.x, direction.y, direction.z] as [number, number, number],
+      }
+    },
+    captureScreenshot(width: number, height: number, quality = 0.6) {
+      const core = coreRef.current
+      if (!core) return ''
+      const { scene, camera, renderer } = core
+      // Force one frame render before capture so the buffer is up-to-date (avoids black image)
+      renderer.render(scene, camera)
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return ''
+      ctx.drawImage(renderer.domElement, 0, 0, width, height)
+      return canvas.toDataURL('image/jpeg', quality)
+    },
+  }), [])
 
   useEffect(() => {
     itemsRef.current = items
@@ -201,6 +237,11 @@ export default function ThreeScene({
 
   useEffect(() => {
     interactionLockedRef.current = interactionLocked
+    const core = coreRef.current
+    if (core) {
+      core.controls.enableRotate = !interactionLocked
+      core.controls.enablePan = false
+    }
     if (interactionLocked) {
       const mount = mountRef.current
       const canvas = mount?.querySelector('canvas') as HTMLCanvasElement | null
@@ -409,15 +450,15 @@ export default function ThreeScene({
 
       const mainCeilingMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        map: scenePreset === 'practice' ? null : wallpaperMap,
-        normalMap: scenePreset === 'practice' ? null : wallNormalMap,
+        map: wallpaperMap,
+        normalMap: wallNormalMap,
         normalScale: new THREE.Vector2(0.22, 0.22),
-        roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
-        metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
-        roughness: scenePreset === 'practice' ? 0.95 : 0.62,
-        metalness: scenePreset === 'practice' ? 0.02 : 0.18,
-        emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
-        emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
+        roughnessMap: wallRoughnessMap,
+        metalnessMap: wallMetalnessMap,
+        roughness: 0.62,
+        metalness: 0.18,
+        emissive: new THREE.Color('#2e1a66'),
+        emissiveIntensity: 0.14,
         side: THREE.FrontSide,
       })
       wallAndCeilingMaterials.push(mainCeilingMaterial)
@@ -462,15 +503,15 @@ export default function ThreeScene({
     if (scenePreset === 'default') {
       const partitionMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        map: scenePreset === 'practice' ? null : wallpaperMap,
-        normalMap: scenePreset === 'practice' ? null : wallNormalMap,
+        map: wallpaperMap,
+        normalMap: wallNormalMap,
         normalScale: new THREE.Vector2(0.22, 0.22),
-        roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
-        metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
-        roughness: scenePreset === 'practice' ? 0.95 : 0.62,
-        metalness: scenePreset === 'practice' ? 0.02 : 0.18,
-        emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
-        emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
+        roughnessMap: wallRoughnessMap,
+        metalnessMap: wallMetalnessMap,
+        roughness: 0.62,
+        metalness: 0.18,
+        emissive: new THREE.Color('#2e1a66'),
+        emissiveIntensity: 0.14,
       })
       wallAndCeilingMaterials.push(partitionMaterial)
 
@@ -493,15 +534,15 @@ export default function ThreeScene({
       // 厨房天花板
       const kitchenCeilingMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        map: scenePreset === 'practice' ? null : wallpaperMap,
-        normalMap: scenePreset === 'practice' ? null : wallNormalMap,
+        map: wallpaperMap,
+        normalMap: wallNormalMap,
         normalScale: new THREE.Vector2(0.22, 0.22),
-        roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
-        metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
-        roughness: scenePreset === 'practice' ? 0.95 : 0.62,
-        metalness: scenePreset === 'practice' ? 0.02 : 0.18,
-        emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
-        emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
+        roughnessMap: wallRoughnessMap,
+        metalnessMap: wallMetalnessMap,
+        roughness: 0.62,
+        metalness: 0.18,
+        emissive: new THREE.Color('#2e1a66'),
+        emissiveIntensity: 0.14,
         side: THREE.FrontSide,
       })
       wallAndCeilingMaterials.push(kitchenCeilingMaterial)
@@ -524,15 +565,15 @@ export default function ThreeScene({
       // 厕所天花板
       const toiletCeilingMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        map: scenePreset === 'practice' ? null : wallpaperMap,
-        normalMap: scenePreset === 'practice' ? null : wallNormalMap,
+        map: wallpaperMap,
+        normalMap: wallNormalMap,
         normalScale: new THREE.Vector2(0.22, 0.22),
-        roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
-        metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
-        roughness: scenePreset === 'practice' ? 0.95 : 0.62,
-        metalness: scenePreset === 'practice' ? 0.02 : 0.18,
-        emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
-        emissiveIntensity: scenePreset === 'practice' ? 0 : 0.14,
+        roughnessMap: wallRoughnessMap,
+        metalnessMap: wallMetalnessMap,
+        roughness: 0.62,
+        metalness: 0.18,
+        emissive: new THREE.Color('#2e1a66'),
+        emissiveIntensity: 0.14,
         side: THREE.FrontSide,
       })
       wallAndCeilingMaterials.push(toiletCeilingMaterial)
@@ -802,9 +843,9 @@ export default function ThreeScene({
     const visualsById = new Map<string, ItemVisual>()
     const slotById = new Map<string, number>()
 
-    const gltfLoader = new GLTFLoader()
     const dracoLoader = new DRACOLoader()
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/')
+    const gltfLoader = new GLTFLoader()
     gltfLoader.setDRACOLoader(dracoLoader)
     const modelCache = new Map<string, THREE.Object3D>()
     const historicModelCache = new Map<number, THREE.Object3D>()
@@ -887,7 +928,7 @@ export default function ThreeScene({
 
         visual.root.add(modelInstance)
         visual.clickable = modelInstance
-        visual.emissiveMaterials = collectEmissiveMaterials(modelInstance)
+        visual.emissiveMaterials = collectEmissiveMaterials(modelInstance, !visual.isExtraSlot)
         updateVisualAppearance(visual)
       } catch {
         // keep placeholder when loading fails
@@ -941,12 +982,13 @@ export default function ThreeScene({
       }
     }
 
-    const createItemVisual = (item: SceneItem, slot: number) => {
+    const createItemVisual = (item: SceneItem, slot: number, isExtraSlot = false) => {
       const config = itemConfigs[slot]
       if (!config) return
       const rootPos = forceHistoricModels && config.historicPosition ? config.historicPosition : config.position
       const [x, y, z] = rootPos
       const suppressAnsweredGreen = NO_GREEN_MODEL_PATHS.has(config.modelPath)
+      const enableShadows = !isExtraSlot
 
       const root = new THREE.Group()
       root.position.set(x, y, z)
@@ -963,8 +1005,8 @@ export default function ThreeScene({
           metalness: 0.1,
         }),
       )
-      placeholder.castShadow = true
-      placeholder.receiveShadow = true
+      placeholder.castShadow = enableShadows
+      placeholder.receiveShadow = enableShadows
       root.add(placeholder)
 
       const glowHalo = new THREE.Mesh(
@@ -1006,6 +1048,9 @@ export default function ThreeScene({
         transitioningToHistoric: false,
         hasSwitchedToHistoric: false,
         loadingHistoricModel: false,
+        isExtraSlot,
+        prevAnswered: item.answered,
+        prevActive: false,
       }
 
       visualsById.set(item.id, visual)
@@ -1021,7 +1066,6 @@ export default function ThreeScene({
     })
 
     if (renderUnusedSlots) {
-      // 对于配置中未被题目 items 占用的槽位，也渲染为静态模型，便于手动调参预览
       const usedSlots = new Set<number>(Array.from(slotById.values()))
       itemConfigs.forEach((_, slot) => {
         if (usedSlots.has(slot)) return
@@ -1032,6 +1076,7 @@ export default function ThreeScene({
             answered: true,
           },
           slot,
+          true,
         )
       })
     }
@@ -1147,8 +1192,6 @@ export default function ThreeScene({
     let raf = 0
     const clock = new THREE.Clock()
     let lastActiveIdsKey = ''
-    let lastValidCameraX = camera.position.x
-    let lastValidCameraZ = camera.position.z
 
     const isMovementBlocked = (prevX: number, prevZ: number, nextX: number, nextZ: number) => {
       const PLAYER_RADIUS = 0.22
@@ -1183,35 +1226,38 @@ export default function ThreeScene({
       return false
     }
 
+    let taskVisualsList: ItemVisual[] | null = null
+    const activeIdsBuffer: string[] = []
+    const _forward = new THREE.Vector3()
+    const _right = new THREE.Vector3()
+    const _movement = new THREE.Vector3()
+
     const animate = () => {
       raf = requestAnimationFrame(animate)
       const delta = clock.getDelta()
 
-      const forward = new THREE.Vector3()
-      camera.getWorldDirection(forward)
-      forward.y = 0
-      if (forward.lengthSq() > 0) forward.normalize()
+      _forward.set(0, 0, 0)
+      camera.getWorldDirection(_forward)
+      _forward.y = 0
+      if (_forward.lengthSq() > 0) _forward.normalize()
 
-      const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize()
-      const movement = new THREE.Vector3()
+      _right.crossVectors(_forward, camera.up).normalize()
+      _movement.set(0, 0, 0)
 
-      if (moveState.KeyW) movement.add(forward)
-      if (moveState.KeyS) movement.sub(forward)
-      if (moveState.KeyA) movement.sub(right)
-      if (moveState.KeyD) movement.add(right)
+      if (moveState.KeyW) _movement.add(_forward)
+      if (moveState.KeyS) _movement.sub(_forward)
+      if (moveState.KeyA) _movement.sub(_right)
+      if (moveState.KeyD) _movement.add(_right)
 
-      if (movement.lengthSq() > 0) {
-        movement.normalize().multiplyScalar(moveSpeed * delta)
-
+      if (_movement.lengthSq() > 0) {
+        _movement.normalize().multiplyScalar(moveSpeed * delta)
         const prevCameraX = camera.position.x
         const prevCameraZ = camera.position.z
-        const nextX = THREE.MathUtils.clamp(prevCameraX + movement.x, -8.2, 16)
-        const nextZ = THREE.MathUtils.clamp(prevCameraZ + movement.z, -8.2, 18)
+        const nextX = THREE.MathUtils.clamp(prevCameraX + _movement.x, -8.2, 16)
+        const nextZ = THREE.MathUtils.clamp(prevCameraZ + _movement.z, -8.2, 18)
 
         if (!isMovementBlocked(prevCameraX, prevCameraZ, nextX, nextZ)) {
           camera.position.set(nextX, camera.position.y, nextZ)
-          lastValidCameraX = nextX
-          lastValidCameraZ = nextZ
         }
       }
 
@@ -1220,14 +1266,16 @@ export default function ThreeScene({
       visualsById.forEach((visual) => {
         visual.root.position.y = visual.baseY
 
-        // 仅按 (x, z) 平面上的直线距离判定可交互范围
-        const dx = camera.position.x - visual.root.position.x
-        const dz = camera.position.z - visual.root.position.z
-        const planarDistance = Math.hypot(dx, dz)
-        visual.active = visual.isInteractive && !visual.answered && planarDistance <= INTERACT_DISTANCE
+        if (!visual.isExtraSlot) {
+          // 仅按 (x, z) 平面上的直线距离判定可交互范围
+          const dx = camera.position.x - visual.root.position.x
+          const dz = camera.position.z - visual.root.position.z
+          const planarDistance = Math.hypot(dx, dz)
+          visual.active = visual.isInteractive && !visual.answered && planarDistance <= INTERACT_DISTANCE
+        }
 
-        const haloMat = visual.glowHalo.material as THREE.MeshBasicMaterial
         if (visual.active && !visual.answered) {
+          const haloMat = visual.glowHalo.material as THREE.MeshBasicMaterial
           const pulse = (Math.sin(elapsed * 4.2) + 1) / 2
           const scale = visual.haloBaseScale + pulse * visual.haloPulseAmplitude
           visual.glowHalo.scale.setScalar(scale)
@@ -1251,12 +1299,12 @@ export default function ThreeScene({
 
             if (histScale >= targetScale && nextScale <= 0.02) {
               visual.root.remove(visual.clickable)
-              visual.clickable.traverse((obj) => {
+              visual.clickable.traverse((obj: THREE.Object3D) => {
                 const mesh = obj as THREE.Mesh
                 if (!mesh.isMesh) return
                 mesh.geometry.dispose()
                 if (Array.isArray(mesh.material)) {
-                  mesh.material.forEach((m) => m.dispose())
+                  mesh.material.forEach((m: THREE.Material) => m.dispose())
                 } else {
                   mesh.material.dispose()
                 }
@@ -1270,16 +1318,23 @@ export default function ThreeScene({
           }
         }
 
-        updateVisualAppearance(visual)
+        const stateChanged = visual.prevAnswered !== visual.answered || visual.prevActive !== visual.active
+        if (stateChanged || visual.transitioningToHistoric) {
+          updateVisualAppearance(visual)
+          visual.prevAnswered = visual.answered
+          visual.prevActive = visual.active
+        }
       })
 
+      if (taskVisualsList === null) {
+        taskVisualsList = Array.from(visualsById.values()).filter(
+          (visual) => !visual.id.startsWith(EXTRA_ITEM_ID_PREFIX),
+        )
+      }
       const allAnswered =
         scenePreset === 'default' &&
-        Array.from(visualsById.values())
-          .filter((visual) => !visual.id.startsWith(EXTRA_ITEM_ID_PREFIX)).length > 0 &&
-        Array.from(visualsById.values())
-          .filter((visual) => !visual.id.startsWith(EXTRA_ITEM_ID_PREFIX))
-          .every((visual) => visual.answered)
+        taskVisualsList.length > 0 &&
+        taskVisualsList.every((visual) => visual.answered)
 
       if (allAnswered) {
         roomMaterial.emissiveIntensity = THREE.MathUtils.lerp(roomMaterial.emissiveIntensity, 0.28, 0.02)
@@ -1346,14 +1401,15 @@ export default function ThreeScene({
         }
       }
 
-      const activeIds = Array.from(visualsById.values())
-        .filter((visual) => visual.active && !visual.id.startsWith(EXTRA_ITEM_ID_PREFIX))
-        .map((visual) => visual.id)
-        .sort()
-      const activeIdsKey = activeIds.join('|')
+      activeIdsBuffer.length = 0
+      for (const visual of taskVisualsList) {
+        if (visual.active) activeIdsBuffer.push(visual.id)
+      }
+      activeIdsBuffer.sort()
+      const activeIdsKey = activeIdsBuffer.join('|')
       if (activeIdsKey !== lastActiveIdsKey) {
         lastActiveIdsKey = activeIdsKey
-        onActiveItemsChangeRef.current?.(activeIds)
+        onActiveItemsChangeRef.current?.([...activeIdsBuffer])
       }
 
       // OrbitControls 已禁用，仅保留手写视角/位移控制
@@ -1390,17 +1446,17 @@ export default function ThreeScene({
       renderer.domElement.removeEventListener('click', onClick)
       renderer.domElement.style.cursor = 'default'
 
+      dracoLoader.dispose()
       controls.dispose()
       pmremGenerator.dispose()
       envRT.dispose()
-      dracoLoader.dispose()
 
-      scene.traverse((obj) => {
+      scene.traverse((obj: THREE.Object3D) => {
         const mesh = obj as THREE.Mesh
         if (mesh.isMesh) {
           mesh.geometry.dispose()
           if (Array.isArray(mesh.material)) {
-            mesh.material.forEach((material) => material.dispose())
+            mesh.material.forEach((material: THREE.Material) => material.dispose())
           } else {
             mesh.material.dispose()
           }
@@ -1475,4 +1531,6 @@ export default function ThreeScene({
   }, [items])
 
   return <div className="three-mount" ref={mountRef} />
-}
+})
+
+export default ThreeScene

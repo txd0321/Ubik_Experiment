@@ -228,6 +228,17 @@ textarea {
   font-weight: 700;
 }
 
+.ghost-btn--skip-test {
+  font-size: 12px;
+  opacity: 0.85;
+  padding: 4px 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+}
+.ghost-btn--skip-test:hover {
+  opacity: 1;
+}
+
 .topbar h1 {
   margin: 0;
   font-size: 24px;

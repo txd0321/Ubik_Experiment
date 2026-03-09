@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import ThreeScene from './components/ThreeScene'
+import ThreeScene, { ROOM_HEIGHT, ROOM_SIZE, type ThreeSceneHandle } from './components/ThreeScene'
 import { batchEvents, initSession, submitExperiment, type EventPayload, type Step } from './lib/api'
+
+export type OptionType = 'visual' | 'narrative' | 'semantic' | 'baseline'
 
 type Option = {
   id: string
   label: string
   image?: string
+  /** Researcher-only; not shown to user. Used in telemetry. */
+  optionType?: OptionType
 }
 
 type ItemQuestion = {
@@ -14,6 +18,8 @@ type ItemQuestion = {
   question: string
   correctOptionId: string
   options: Option[]
+  /** Researcher-only; not shown to user. Used in telemetry. */
+  modelFile?: string
 }
 
 type PracticeAnswer = {
@@ -40,6 +46,34 @@ type SurveyData = {
   environmentImpact: string
   narrativePresence: string
   feedback: string
+}
+
+/** First time user clicks any option (before final submit). */
+type FirstClickRecord = {
+  ts: number
+  itemId: string
+  optionId: string
+  optionType?: OptionType
+}
+
+/** Per-question telemetry: filled when panel opens, snapshot on submit. */
+type InteractionRecord = {
+  interaction_id: string
+  panel_open_ts: number
+  option_hover_map: Record<string, number>
+  first_click: FirstClickRecord | null
+  q_submitted_at: number
+  total_duration_ms: number
+  window_size: { innerWidth: number; innerHeight: number }
+}
+
+/** Full formal interaction including item metadata and screenshot (for export/submit). */
+type FormalInteractionRecord = InteractionRecord & {
+  itemId: string
+  modelFile?: string
+  selectedOptionId: string
+  orderIndex: number
+  viewport_screenshot?: string
 }
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
@@ -77,241 +111,261 @@ const FORMAL_ITEMS: ItemQuestion[] = [
   {
     id: 'nano-repair-spray',
     name: '纳米修复喷雾',
+    modelFile: 'itr_01_2030_spray_bedroom_opt.glb',
     question: '纳米修复喷雾最可能退行成哪一项？',
     correctOptionId: 'B',
     options: [
-      { id: 'A', label: 'A. 现代圆柱形运动水壶' },
-      { id: 'B', label: 'B. 老式马口铁气雾罐' },
-      { id: 'C', label: 'C. 游乐场旋转木马' },
-      { id: 'D', label: 'D. 带有发光液体的魔法药水瓶' },
+      { id: 'A', label: 'A. 现代圆柱形运动水壶', optionType: 'visual' },
+      { id: 'B', label: 'B. 老式马口铁气雾罐', optionType: 'narrative' },
+      { id: 'C', label: 'C. 游乐场旋转木马', optionType: 'baseline' },
+      { id: 'D', label: 'D. 带有发光液体的魔法药水瓶', optionType: 'semantic' },
     ],
   },
   {
     id: 'smart-speaker',
     name: '智能音箱',
+    modelFile: 'itr_02_2030_soundbox_bedroom_opt.glb',
     question: '智能音箱最可能退行成哪一项？',
     correctOptionId: 'D',
     options: [
-      { id: 'A', label: 'A. 现代头戴式无线耳机' },
-      { id: 'B', label: 'B. 木质复古相框' },
-      { id: 'C', label: 'C. 表面光滑的深灰色圆石' },
-      { id: 'D', label: 'D. 大喇叭铜质留声机' },
+      { id: 'A', label: 'A. 现代头戴式无线耳机', optionType: 'semantic' },
+      { id: 'B', label: 'B. 木质复古相框', optionType: 'baseline' },
+      { id: 'C', label: 'C. 表面光滑的深灰色圆石', optionType: 'visual' },
+      { id: 'D', label: 'D. 大喇叭铜质留声机', optionType: 'narrative' },
     ],
   },
   {
     id: 'holographic-projector',
     name: '全息投影仪',
+    modelFile: 'itr_03_2030_holographicProjectorB_bedroom_opt.glb',
     question: '全息投影仪最可能退行成哪一项？',
     correctOptionId: 'A',
     options: [
-      { id: 'A', label: 'A. 收音机' },
-      { id: 'B', label: 'B. 铁制家用剪刀' },
-      { id: 'C', label: 'C. 现代极简透明玻璃立方体/花瓶' },
-      { id: 'D', label: 'D. 宽屏超薄液晶显示器' },
+      { id: 'A', label: 'A. 收音机', optionType: 'narrative' },
+      { id: 'B', label: 'B. 铁制家用剪刀', optionType: 'baseline' },
+      { id: 'C', label: 'C. 现代极简透明玻璃立方体/花瓶', optionType: 'visual' },
+      { id: 'D', label: 'D. 宽屏超薄液晶显示器', optionType: 'semantic' },
     ],
   },
   {
     id: 'smart-environment-lamp',
     name: '智能环境灯',
+    modelFile: 'itr_04_2030_smartLight_bedroom_opt.glb',
     question: '智能环境灯最可能退行成哪一项？',
     correctOptionId: 'B',
     options: [
-      { id: 'A', label: 'A. 强光手电筒' },
-      { id: 'B', label: 'B. 手提式煤油马灯' },
-      { id: 'C', label: 'C. 发光的磨砂白色乒乓球' },
-      { id: 'D', label: 'D. 玻璃水杯' },
+      { id: 'A', label: 'A. 强光手电筒', optionType: 'semantic' },
+      { id: 'B', label: 'B. 手提式煤油马灯', optionType: 'narrative' },
+      { id: 'C', label: 'C. 发光的磨砂白色乒乓球', optionType: 'visual' },
+      { id: 'D', label: 'D. 玻璃水杯', optionType: 'baseline' },
     ],
   },
   {
     id: 'laptop',
     name: '笔记本电脑',
+    modelFile: 'itr_05_2030_laptop_bedroom_opt.glb',
     question: '笔记本电脑最可能退行成哪一项？',
     correctOptionId: 'B',
     options: [
-      { id: 'A', label: 'A. 传统的木框算盘' },
-      { id: 'B', label: 'B. 雷明顿机械打字机' },
-      { id: 'C', label: 'C. 银色不锈钢咖啡托盘' },
-      { id: 'D', label: 'D. 折叠式便携梳妆镜' },
+      { id: 'A', label: 'A. 传统的木框算盘', optionType: 'semantic' },
+      { id: 'B', label: 'B. 雷明顿机械打字机', optionType: 'narrative' },
+      { id: 'C', label: 'C. 银色不锈钢咖啡托盘', optionType: 'baseline' },
+      { id: 'D', label: 'D. 折叠式便携梳妆镜', optionType: 'visual' },
     ],
   },
   {
     id: 'smartphone',
     name: '智能手机',
+    modelFile: 'itr_06_2030_smartPhone_bedroom_opt.glb',
     question: '智能手机最可能退行成哪一项？',
     correctOptionId: 'A',
     options: [
-      { id: 'A', label: 'A. 牛皮纸信封' },
-      { id: 'B', label: 'B. 火柴盒' },
-      { id: 'C', label: 'C. 陶瓷烟灰缸' },
-      { id: 'D', label: 'D. 黑色磨砂石板' },
+      { id: 'A', label: 'A. 牛皮纸信封', optionType: 'narrative' },
+      { id: 'B', label: 'B. 火柴盒', optionType: 'semantic' },
+      { id: 'C', label: 'C. 陶瓷烟灰缸', optionType: 'baseline' },
+      { id: 'D', label: 'D. 黑色磨砂石板', optionType: 'visual' },
     ],
   },
   {
     id: 'digital-wallet',
     name: '数字钱包',
+    modelFile: 'itr_07_2030_digitalWallet_bedroom_opt.glb',
     question: '数字钱包最可能退行成哪一项？',
     correctOptionId: 'B',
     options: [
-      { id: 'A', label: 'A. 黑色扁平充电宝' },
-      { id: 'B', label: 'B. 磨损的皮革钱袋与银币' },
-      { id: 'C', label: 'C. 手持雨伞的手柄' },
-      { id: 'D', label: 'D. 纸质银行存折' },
+      { id: 'A', label: 'A. 黑色扁平充电宝', optionType: 'visual' },
+      { id: 'B', label: 'B. 磨损的皮革钱袋与银币', optionType: 'narrative' },
+      { id: 'C', label: 'C. 手持雨伞的手柄', optionType: 'baseline' },
+      { id: 'D', label: 'D. 纸质银行存折', optionType: 'semantic' },
     ],
   },
   {
     id: 'smart-coffee-machine',
     name: '智能咖啡机',
+    modelFile: 'itr_08_2030_coffeeMachine_bedroom_opt.glb',
     question: '智能咖啡机最可能退行成哪一项？',
     correctOptionId: 'C',
     options: [
-      { id: 'A', label: 'A. 金属垃圾桶' },
-      { id: 'B', label: 'B. 旧报纸' },
-      { id: 'C', label: 'C. 手摇研磨机、炭火铜炉' },
-      { id: 'D', label: 'D. 咖啡包装袋' },
+      { id: 'A', label: 'A. 金属垃圾桶', optionType: 'visual' },
+      { id: 'B', label: 'B. 旧报纸', optionType: 'baseline' },
+      { id: 'C', label: 'C. 手摇研磨机、炭火铜炉', optionType: 'narrative' },
+      { id: 'D', label: 'D. 咖啡包装袋', optionType: 'semantic' },
     ],
   },
   {
     id: 'smart-air-conditioner',
     name: '智能中央空调',
+    modelFile: 'itr_09_2030_airConditioner_bedroom_opt.glb',
     question: '智能中央空调最可能退行成哪一项？',
     correctOptionId: 'D',
     options: [
-      { id: 'A', label: 'A. 墙上的白色横梁' },
-      { id: 'B', label: 'B. 绿色盆栽' },
-      { id: 'C', label: 'C. 三叶电风扇' },
-      { id: 'D', label: 'D. 铸铁暖气片' },
+      { id: 'A', label: 'A. 墙上的白色横梁', optionType: 'visual' },
+      { id: 'B', label: 'B. 绿色盆栽', optionType: 'baseline' },
+      { id: 'C', label: 'C. 三叶电风扇', optionType: 'semantic' },
+      { id: 'D', label: 'D. 铸铁暖气片', optionType: 'narrative' },
     ],
   },
   {
     id: 'plasma-lighter',
     name: '电浆打火机',
+    modelFile: 'itr_10_2030_electricLighter_bedroom_opt.glb',
     question: '电浆打火机最可能退行成哪一项？',
     correctOptionId: 'C',
     options: [
-      { id: 'A', label: 'A. 塑料美发梳' },
-      { id: 'B', label: 'B. 聚光放大镜' },
-      { id: 'C', label: 'C. 木制火柴盒' },
-      { id: 'D', label: 'D. 圆柱金属外壳口红' },
+      { id: 'A', label: 'A. 塑料美发梳', optionType: 'baseline' },
+      { id: 'B', label: 'B. 聚光放大镜', optionType: 'semantic' },
+      { id: 'C', label: 'C. 木制火柴盒', optionType: 'narrative' },
+      { id: 'D', label: 'D. 圆柱金属外壳口红', optionType: 'visual' },
     ],
   },
   {
     id: 'smart-toilet',
     name: '智能马桶',
+    modelFile: 'itr_11_2030_smart_toilet_toilet_opt.glb',
     question: '智能马桶最可能退行成哪一项？',
     correctOptionId: 'B',
     options: [
-      { id: 'A', label: 'A. 现代白色陶瓷洗手台' },
-      { id: 'B', label: 'B. 搪瓷图案夜壶/痰盂' },
-      { id: 'C', label: 'C. 几卷现代卫生纸' },
-      { id: 'D', label: 'D. 木质地球仪' },
+      { id: 'A', label: 'A. 现代白色陶瓷洗手台', optionType: 'visual' },
+      { id: 'B', label: 'B. 搪瓷图案夜壶/痰盂', optionType: 'narrative' },
+      { id: 'C', label: 'C. 几卷现代卫生纸', optionType: 'baseline' },
+      { id: 'D', label: 'D. 木质地球仪', optionType: 'semantic' },
     ],
   },
   {
     id: 'sonic-toothbrush',
     name: '电动牙刷',
+    modelFile: 'itr_12_2030_sonic_toothbrush_toilet_opt.glb',
     question: '电动牙刷最可能退行成哪一项？',
     correctOptionId: 'A',
     options: [
-      { id: 'A', label: 'A. 猪鬃牙刷与铁盒牙粉' },
-      { id: 'B', label: 'B. 塑料软毛牙刷' },
-      { id: 'C', label: 'C. 金属螺丝刀' },
-      { id: 'D', label: 'D. 白板笔' },
+      { id: 'A', label: 'A. 猪鬃牙刷与铁盒牙粉', optionType: 'narrative' },
+      { id: 'B', label: 'B. 塑料软毛牙刷', optionType: 'visual' },
+      { id: 'C', label: 'C. 金属螺丝刀', optionType: 'baseline' },
+      { id: 'D', label: 'D. 白板笔', optionType: 'semantic' },
     ],
   },
   {
     id: 'hair-dryer',
     name: '电动吹风机',
+    modelFile: 'itr_13_2030_hair_dryer_toilet_opt.glb',
     question: '电动吹风机最可能退行成哪一项？',
     correctOptionId: 'C',
     options: [
-      { id: 'A', label: 'A. 电直板夹' },
-      { id: 'B', label: 'B. 手持金属放大镜' },
-      { id: 'C', label: 'C. 老式美发工具组' },
-      { id: 'D', label: 'D. 陶瓷咖啡杯' },
+      { id: 'A', label: 'A. 电直板夹', optionType: 'visual' },
+      { id: 'B', label: 'B. 手持金属放大镜', optionType: 'baseline' },
+      { id: 'C', label: 'C. 老式美发工具组', optionType: 'narrative' },
+      { id: 'D', label: 'D. 陶瓷咖啡杯', optionType: 'semantic' },
     ],
   },
   {
     id: 'smart-shower-system',
     name: '智能淋浴系统',
+    modelFile: 'itr_14_2030_smart_shower_system_toilet_opt.glb',
     question: '智能淋浴系统最可能退行成哪一项？',
     correctOptionId: 'C',
     options: [
-      { id: 'A', label: 'A. 圆形顶灯+金属落地灯组合' },
-      { id: 'B', label: 'B. 多功能花洒' },
-      { id: 'C', label: 'C. 掉漆浴缸+木质水瓢' },
-      { id: 'D', label: 'D. 木质吉他' },
+      { id: 'A', label: 'A. 圆形顶灯+金属落地灯组合', optionType: 'visual' },
+      { id: 'B', label: 'B. 多功能花洒', optionType: 'semantic' },
+      { id: 'C', label: 'C. 掉漆浴缸+木质水瓢', optionType: 'narrative' },
+      { id: 'D', label: 'D. 木质吉他', optionType: 'baseline' },
     ],
   },
   {
     id: 'smart-washbasin',
     name: '智能盥洗台',
+    modelFile: 'itr_15_2030_smart_washbasin_toilet_opt.glb',
     question: '智能盥洗台最可能退行成哪一项？',
     correctOptionId: 'A',
     options: [
-      { id: 'A', label: 'A. 搪瓷洗脸盆+木质洗漱架' },
-      { id: 'B', label: 'B. 不锈钢洗碗池' },
-      { id: 'C', label: 'C. 纯白办公书桌' },
-      { id: 'D', label: 'D. 百科全书' },
+      { id: 'A', label: 'A. 搪瓷洗脸盆+木质洗漱架', optionType: 'narrative' },
+      { id: 'B', label: 'B. 不锈钢洗碗池', optionType: 'visual' },
+      { id: 'C', label: 'C. 纯白办公书桌', optionType: 'baseline' },
+      { id: 'D', label: 'D. 百科全书', optionType: 'semantic' },
     ],
   },
   {
     id: 'smart-refrigerator',
     name: '智能冰箱',
+    modelFile: 'itr_16_2030_smart_refrigerator_kitchen_opt.glb',
     question: '智能冰箱最可能退行成哪一项？',
     correctOptionId: 'A',
     options: [
-      { id: 'A', label: 'A. 老式木质冰柜' },
-      { id: 'B', label: 'B. 双开门保险箱' },
-      { id: 'C', label: 'C. 智能保温箱' },
-      { id: 'D', label: 'D. 落地衣架' },
+      { id: 'A', label: 'A. 老式木质冰柜', optionType: 'narrative' },
+      { id: 'B', label: 'B. 双开门保险箱', optionType: 'visual' },
+      { id: 'C', label: 'C. 智能保温箱', optionType: 'semantic' },
+      { id: 'D', label: 'D. 落地衣架', optionType: 'baseline' },
     ],
   },
   {
     id: 'smart-rice-cooker',
     name: '智能电饭煲',
+    modelFile: 'itr_17_2030_smart_rice_cooker_kitchen_opt.glb',
     question: '智能电饭煲最可能退行成哪一项？',
     correctOptionId: 'D',
     options: [
-      { id: 'A', label: 'A. 不锈钢高压锅' },
-      { id: 'B', label: 'B. 仙人掌盆栽' },
-      { id: 'C', label: 'C. 摩托车头盔' },
-      { id: 'D', label: 'D. 铸铁双耳吊锅' },
+      { id: 'A', label: 'A. 不锈钢高压锅', optionType: 'visual' },
+      { id: 'B', label: 'B. 仙人掌盆栽', optionType: 'baseline' },
+      { id: 'C', label: 'C. 摩托车头盔', optionType: 'semantic' },
+      { id: 'D', label: 'D. 铸铁双耳吊锅', optionType: 'narrative' },
     ],
   },
   {
     id: 'robot-vacuum-cleaner',
     name: '扫地机器人',
+    modelFile: 'itr_18_2030_robot_vacuum_cleaner_kitchen_opt.glb',
     question: '扫地机器人最可能退行成哪一项？',
     correctOptionId: 'C',
     options: [
-      { id: 'A', label: 'A. 圆形玻璃体重秤' },
-      { id: 'B', label: 'B. 吸尘器' },
-      { id: 'C', label: 'C. 扫帚与簸箕' },
-      { id: 'D', label: 'D. 陶瓷餐盘' },
+      { id: 'A', label: 'A. 圆形玻璃体重秤', optionType: 'visual' },
+      { id: 'B', label: 'B. 吸尘器', optionType: 'semantic' },
+      { id: 'C', label: 'C. 扫帚与簸箕', optionType: 'narrative' },
+      { id: 'D', label: 'D. 陶瓷餐盘', optionType: 'baseline' },
     ],
   },
   {
     id: 'smart-kettle',
     name: '电热水壶',
+    modelFile: 'itr_19_2030_smart_kettle_kitchen_opt.glb',
     question: '电热水壶最可能退行成哪一项？',
     correctOptionId: 'B',
     options: [
-      { id: 'A', label: 'A. 保温杯' },
-      { id: 'B', label: 'B. 铜制烧水壶' },
-      { id: 'C', label: 'C. 铁锤' },
-      { id: 'D', label: 'D. 榨汁机' },
+      { id: 'A', label: 'A. 保温杯', optionType: 'semantic' },
+      { id: 'B', label: 'B. 铜制烧水壶', optionType: 'narrative' },
+      { id: 'C', label: 'C. 铁锤', optionType: 'baseline' },
+      { id: 'D', label: 'D. 榨汁机', optionType: 'visual' },
     ],
   },
   {
     id: 'microwave-oven',
     name: '微波炉',
+    modelFile: 'itr_20_2030_microwave_oven_kitchen_opt.glb',
     question: '微波炉最可能退行成哪一项？',
     correctOptionId: 'A',
     options: [
-      { id: 'A', label: 'A. 柴火炉' },
-      { id: 'B', label: 'B. 老式天线电视机' },
-      { id: 'C', label: 'C. 小提琴琴盒' },
-      { id: 'D', label: 'D. 空气炸锅' },
+      { id: 'A', label: 'A. 柴火炉', optionType: 'narrative' },
+      { id: 'B', label: 'B. 老式天线电视机', optionType: 'semantic' },
+      { id: 'C', label: 'C. 小提琴琴盒', optionType: 'baseline' },
+      { id: 'D', label: 'D. 空气炸锅', optionType: 'visual' },
     ],
   },
 ]
@@ -391,6 +445,8 @@ function App() {
   const [formalDurationMs, setFormalDurationMs] = useState(0)
 
   const eventsRef = useRef<EventPayload[]>([])
+  /** Full event log for JSON export (never flushed). */
+  const allEventsForExportRef = useRef<EventPayload[]>([])
   const practiceFeedbackTimerRef = useRef<number | null>(null)
   const experimentStartAtRef = useRef<number>(0)
   const panelOpenAtRef = useRef<number>(0)
@@ -401,6 +457,25 @@ function App() {
   const formalOptionHoverDurationsRef = useRef<Record<string, number>>({})
   const formalOptionHoverCountsRef = useRef<Record<string, number>>({})
 
+  const currentInteractionIdRef = useRef<string>('')
+  const hoverTrackerRef = useRef<Record<string, { startMs: number | null; totalMs: number }>>({})
+  const firstClickRef = useRef<FirstClickRecord | null>(null)
+  const practiceInteractionRecordRef = useRef<InteractionRecord | null>(null)
+  const formalInteractionRecordsRef = useRef<FormalInteractionRecord[]>([])
+  const sceneRef = useRef<ThreeSceneHandle | null>(null)
+  const trajectoryRef = useRef<number[][]>([])
+  /** When we sampled at 200ms but skipped recording (same pos/dir within 20s). */
+  const skippedTrajectoryTimestampsRef = useRef<number[]>([])
+  /** True while choice panel is open (practice or formal); pause trajectory recording only. */
+  const trajectoryPausedRef = useRef(false)
+  /** Immediate sample after each submit, marked by question index (0 = practice, 1..10 = formal). */
+  const postSubmitSamplesRef = useRef<Array<{ afterQuestionIndex: number; point: number[] }>>([])
+  const lastTrajectoryRecordRef = useRef<{
+    ts: number
+    position: [number, number, number]
+    direction: [number, number, number]
+  } | null>(null)
+
   const formalAnsweredIds = useMemo(
     () => new Set(formalAnswers.map((a) => a.itemId)),
     [formalAnswers],
@@ -410,9 +485,21 @@ function App() {
     return new Map(FORMAL_ITEMS.map((item) => [item.id, shuffleOptions(item.options)]))
   }, [])
 
+  const recordOptionHoverEnter = useCallback((optionId: string) => {
+    const t = hoverTrackerRef.current[optionId]
+    if (t && t.startMs === null) t.startMs = Date.now()
+  }, [])
+  const recordOptionHoverLeave = useCallback((optionId: string) => {
+    const t = hoverTrackerRef.current[optionId]
+    if (t && t.startMs !== null) {
+      t.totalMs += Date.now() - t.startMs
+      t.startMs = null
+    }
+  }, [])
+
   const track = (eventName: string, payload?: Record<string, unknown>) => {
     if (!sessionId) return
-    eventsRef.current.push({
+    const event: EventPayload = {
       event_id: uid(),
       event_name: eventName,
       event_time: new Date().toISOString(),
@@ -420,7 +507,9 @@ function App() {
       session_id: sessionId,
       page_url: window.location.pathname,
       payload,
-    })
+    }
+    eventsRef.current.push(event)
+    allEventsForExportRef.current.push(event)
   }
 
   const flushEvents = async () => {
@@ -508,6 +597,49 @@ function App() {
   }, [step])
 
   useEffect(() => {
+    if (step !== 'practice' && step !== 'formal') return
+    const TRAJECTORY_SKIP_MS = 20_000
+    const EPS = 1e-5
+    const interval = window.setInterval(() => {
+      if (trajectoryPausedRef.current) return
+      const handle = sceneRef.current
+      const state = handle?.getCameraState()
+      if (!state) return
+      const ts = Date.now()
+      const [cx, cy, cz] = state.position
+      const [dx, dy, dz] = state.direction
+      const last = lastTrajectoryRecordRef.current
+      const samePosition =
+        last &&
+        Math.abs(cx - last.position[0]) <= EPS &&
+        Math.abs(cy - last.position[1]) <= EPS &&
+        Math.abs(cz - last.position[2]) <= EPS
+      const sameDirection =
+        last &&
+        Math.abs(dx - last.direction[0]) <= EPS &&
+        Math.abs(dy - last.direction[1]) <= EPS &&
+        Math.abs(dz - last.direction[2]) <= EPS
+      if (
+        last &&
+        ts - last.ts < TRAJECTORY_SKIP_MS &&
+        samePosition &&
+        sameDirection
+      ) {
+        skippedTrajectoryTimestampsRef.current.push(ts)
+        return
+      }
+      // [timestamp_ms, positionX, positionY, positionZ, directionX, directionY, directionZ] (camera = position, no duplication)
+      trajectoryRef.current.push([ts, cx, cy, cz, dx, dy, dz])
+      lastTrajectoryRecordRef.current = {
+        ts,
+        position: [cx, cy, cz],
+        direction: [dx, dy, dz],
+      }
+    }, 200)
+    return () => clearInterval(interval)
+  }, [step])
+
+  useEffect(() => {
     return () => {
       if (practiceFeedbackTimerRef.current) {
         window.clearTimeout(practiceFeedbackTimerRef.current)
@@ -563,8 +695,16 @@ function App() {
       window.clearTimeout(practiceFeedbackTimerRef.current)
       practiceFeedbackTimerRef.current = null
     }
-    panelOpenAtRef.current = Date.now()
-    track('practice_object_clicked', { itemId: PRACTICE_QUESTION.id })
+    const now = Date.now()
+    panelOpenAtRef.current = now
+    currentInteractionIdRef.current = window.crypto.randomUUID()
+    firstClickRef.current = null
+    hoverTrackerRef.current = PRACTICE_QUESTION.options.reduce(
+      (acc, o) => ({ ...acc, [o.id]: { startMs: null, totalMs: 0 } }),
+      {} as Record<string, { startMs: number | null; totalMs: number }>,
+    )
+    trajectoryPausedRef.current = true
+    track('practice_object_clicked', { itemId: PRACTICE_QUESTION.id, interaction_id: currentInteractionIdRef.current })
   }, [sessionId, step])
 
   const closePracticePanel = () => {
@@ -582,22 +722,47 @@ function App() {
 
   const submitPractice = () => {
     if (!practiceSelected) return
+    trajectoryPausedRef.current = false
+    const qSubmittedAt = Date.now()
+    const panelOpenTs = panelOpenAtRef.current
+    const optionHoverMap: Record<string, number> = {}
+    Object.entries(hoverTrackerRef.current).forEach(([optId, t]) => {
+      optionHoverMap[optId] = t.totalMs + (t.startMs !== null ? qSubmittedAt - t.startMs : 0)
+    })
+    const record: InteractionRecord = {
+      interaction_id: currentInteractionIdRef.current,
+      panel_open_ts: panelOpenTs,
+      option_hover_map: optionHoverMap,
+      first_click: firstClickRef.current,
+      q_submitted_at: qSubmittedAt,
+      total_duration_ms: qSubmittedAt - panelOpenTs,
+      window_size: { innerWidth: window.innerWidth, innerHeight: window.innerHeight },
+    }
+    practiceInteractionRecordRef.current = record
+
     const isCorrect = practiceSelected === PRACTICE_QUESTION.correctOptionId
     const answer: PracticeAnswer = {
       itemId: PRACTICE_QUESTION.id,
       selectedOptionId: practiceSelected,
       isCorrect,
-      durationMs: Date.now() - panelOpenAtRef.current,
+      durationMs: qSubmittedAt - panelOpenTs,
     }
     setPracticeAnswer(answer)
     setShowPracticeFeedback(true)
     setShowEnterFormalButton(false)
-    setPracticeFeedbackShownAt(Date.now())
+    setPracticeFeedbackShownAt(qSubmittedAt)
     track('practice_answer_submitted', {
       itemId: answer.itemId,
       selectedOptionId: answer.selectedOptionId,
       isCorrect: answer.isCorrect,
       durationMs: answer.durationMs,
+      interaction_id: record.interaction_id,
+      panel_open_ts: record.panel_open_ts,
+      option_hover_map: record.option_hover_map,
+      first_click: record.first_click,
+      q_submitted_at: record.q_submitted_at,
+      total_duration_ms: record.total_duration_ms,
+      window_size: record.window_size,
     })
     track('practice_feedback_shown', {
       itemId: answer.itemId,
@@ -610,6 +775,19 @@ function App() {
     practiceFeedbackTimerRef.current = window.setTimeout(() => {
       setShowEnterFormalButton(true)
     }, 3000)
+    // 练习提交后立即采样一次，标记为第 0 题提交后
+    requestAnimationFrame(() => {
+      const state = sceneRef.current?.getCameraState()
+      if (state) {
+        const [cx, cy, cz] = state.position
+        const [dx, dy, dz] = state.direction
+        const ts = Date.now()
+        postSubmitSamplesRef.current.push({
+          afterQuestionIndex: 0,
+          point: [cx, cz, ts, cx, cy, cz, dx, dy, dz],
+        })
+      }
+    })
   }
 
   const enterFormal = () => {
@@ -627,12 +805,20 @@ function App() {
       if (formalAnsweredIds.has(item.id)) return
       setFormalPanelItem(item)
       setFormalSelected('')
+      const now = Date.now()
+      panelOpenAtRef.current = now
       formalOptionHoverStartRef.current = {}
       formalOptionHoverDurationsRef.current = {}
       formalOptionHoverCountsRef.current = {}
-      panelOpenAtRef.current = Date.now()
-      track('formal_object_clicked', { itemId: item.id })
-      track('formal_question_opened', { itemId: item.id, questionOpenedAt: panelOpenAtRef.current })
+      currentInteractionIdRef.current = window.crypto.randomUUID()
+      firstClickRef.current = null
+      hoverTrackerRef.current = item.options.reduce(
+        (acc, o) => ({ ...acc, [o.id]: { startMs: null, totalMs: 0 } }),
+        {} as Record<string, { startMs: number | null; totalMs: number }>,
+      )
+      trajectoryPausedRef.current = true
+      track('formal_object_clicked', { itemId: item.id, interaction_id: currentInteractionIdRef.current, modelFile: item.modelFile })
+      track('formal_question_opened', { itemId: item.id, questionOpenedAt: now })
     },
     [formalAnsweredIds, sessionId, step],
   )
@@ -665,27 +851,64 @@ function App() {
   const submitFormal = () => {
     if (!formalPanelItem || !formalSelected) return
 
-    const now = Date.now()
+    const qSubmittedAt = Date.now()
+    const panelOpenTs = panelOpenAtRef.current
     Object.entries(formalOptionHoverStartRef.current).forEach(([optionId, startedAt]) => {
       if (!startedAt) return
-      const duration = now - startedAt
+      const duration = qSubmittedAt - startedAt
       formalOptionHoverDurationsRef.current[optionId] =
         (formalOptionHoverDurationsRef.current[optionId] ?? 0) + duration
     })
     formalOptionHoverStartRef.current = {}
 
+    const optionHoverMap: Record<string, number> = {}
+    Object.entries(hoverTrackerRef.current).forEach(([optId, t]) => {
+      optionHoverMap[optId] = t.totalMs + (t.startMs !== null ? qSubmittedAt - t.startMs : 0)
+    })
+    const viewportScreenshot = sceneRef.current?.captureScreenshot(320, 180, 0.6) ?? ''
+    trajectoryPausedRef.current = false
     formalOrderRef.current += 1
+    const orderIndexForSubmit = formalOrderRef.current
     const answer: FormalAnswer = {
       itemId: formalPanelItem.id,
       selectedOptionId: formalSelected,
-      durationMs: now - panelOpenAtRef.current,
-      orderIndex: formalOrderRef.current,
+      durationMs: qSubmittedAt - panelOpenTs,
+      orderIndex: orderIndexForSubmit,
       optionHoverDurationsMs: { ...formalOptionHoverDurationsRef.current },
       optionHoverCounts: { ...formalOptionHoverCountsRef.current },
     }
+    const record: FormalInteractionRecord = {
+      interaction_id: currentInteractionIdRef.current,
+      panel_open_ts: panelOpenTs,
+      option_hover_map: optionHoverMap,
+      first_click: firstClickRef.current,
+      q_submitted_at: qSubmittedAt,
+      total_duration_ms: qSubmittedAt - panelOpenTs,
+      window_size: { innerWidth: window.innerWidth, innerHeight: window.innerHeight },
+      itemId: formalPanelItem.id,
+      modelFile: formalPanelItem.modelFile,
+      selectedOptionId: formalSelected,
+      orderIndex: orderIndexForSubmit,
+      viewport_screenshot: viewportScreenshot || undefined,
+    }
+    formalInteractionRecordsRef.current.push(record)
+
     const nextAnswers = [...formalAnswers, answer]
     setFormalAnswers(nextAnswers)
     setFormalPanelItem(null)
+    // 第 orderIndexForSubmit 题提交后立即采样一次
+    requestAnimationFrame(() => {
+      const state = sceneRef.current?.getCameraState()
+      if (state) {
+        const [cx, cy, cz] = state.position
+        const [dx, dy, dz] = state.direction
+        const ts = Date.now()
+        postSubmitSamplesRef.current.push({
+          afterQuestionIndex: orderIndexForSubmit,
+          point: [ts, cx, cy, cz, dx, dy, dz],
+        })
+      }
+    })
     track('formal_answer_submitted', {
       itemId: answer.itemId,
       selectedOptionId: answer.selectedOptionId,
@@ -693,6 +916,14 @@ function App() {
       orderIndex: answer.orderIndex,
       optionHoverDurationsMs: answer.optionHoverDurationsMs,
       optionHoverCounts: answer.optionHoverCounts,
+      interaction_id: record.interaction_id,
+      panel_open_ts: record.panel_open_ts,
+      option_hover_map: record.option_hover_map,
+      first_click: record.first_click,
+      q_submitted_at: record.q_submitted_at,
+      total_duration_ms: record.total_duration_ms,
+      window_size: record.window_size,
+      modelFile: record.modelFile,
     })
 
     formalOptionHoverDurationsRef.current = {}
@@ -707,6 +938,26 @@ function App() {
         setShowFormalExitButton(true)
       }, 5000)
     }
+  }
+
+  const skipFormalStep = () => {
+    if (formalCompleted) return
+    const dummyAnswers: FormalAnswer[] = FORMAL_ITEMS.map((item, orderIndex) => ({
+      itemId: item.id,
+      selectedOptionId: item.options[0]?.id ?? '',
+      durationMs: 0,
+      orderIndex,
+      optionHoverDurationsMs: {},
+      optionHoverCounts: {},
+    }))
+    setFormalAnswers(dummyAnswers)
+    setFormalCompleted(true)
+    track('formal_skip_test')
+    track('formal_environment_transition_started')
+    window.setTimeout(() => {
+      track('formal_environment_transition_finished')
+      setShowFormalExitButton(true)
+    }, 5000)
   }
 
   const markSurveyAnswered = (questionKey: keyof SurveyData) => {
@@ -729,6 +980,62 @@ function App() {
     (surveyData.noticedEnvironmentChanges === '否' || Boolean(surveyData.environmentImpact.trim())) &&
     Boolean(surveyData.narrativePresence)
 
+  const buildExportPayload = useCallback(() => {
+    const totalDurationMs = experimentStartAtRef.current
+      ? Date.now() - experimentStartAtRef.current
+      : 0
+    return {
+      meta: {
+        sessionId,
+        userId,
+        participantPhone,
+        exportedAt: new Date().toISOString(),
+        windowSize: { innerWidth: window.innerWidth, innerHeight: window.innerHeight },
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      },
+      practice: {
+        interactionRecord: practiceInteractionRecordRef.current,
+        answer: practiceAnswer,
+      },
+      formal: {
+        totalDurationMs,
+        interactions: formalInteractionRecordsRef.current,
+        movement_trajectory: {
+          roomOrigin: [0, ROOM_HEIGHT / 2, 0],
+          roomSize: [ROOM_SIZE, ROOM_HEIGHT, ROOM_SIZE],
+          points: trajectoryRef.current,
+          /** Timestamps (ms) at which we sampled but did not record (same pos/dir within 20s). */
+          skippedTimestamps: skippedTrajectoryTimestampsRef.current,
+          /** 每题提交后立即采样一次，afterQuestionIndex: 0=练习，1..10=正式第几题 */
+          postSubmitSamples: postSubmitSamplesRef.current,
+        },
+      },
+      survey: {
+        data: surveyData,
+        questionDurationsMs: surveyQuestionDurationsMs,
+      },
+      eventLog: allEventsForExportRef.current,
+    }
+  }, [
+    sessionId,
+    userId,
+    participantPhone,
+    practiceAnswer,
+    surveyData,
+    surveyQuestionDurationsMs,
+  ])
+
+  const downloadJson = useCallback((payload: object) => {
+    const json = JSON.stringify(payload, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `ubik_${sessionId}_${Date.now()}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [sessionId])
+
   const submitSurvey = async () => {
     if (!surveyValid || submitting) return
     setSubmitting(true)
@@ -743,6 +1050,14 @@ function App() {
       surveyData,
       surveyQuestionDurationsMs,
       eventBufferLength: eventsRef.current.length,
+      formalInteractionRecords: formalInteractionRecordsRef.current,
+      movementTrajectory: {
+        roomOrigin: [0, ROOM_HEIGHT / 2, 0] as [number, number, number],
+        roomSize: [ROOM_SIZE, ROOM_HEIGHT, ROOM_SIZE] as [number, number, number],
+        points: trajectoryRef.current,
+        skippedTimestamps: skippedTrajectoryTimestampsRef.current,
+        postSubmitSamples: postSubmitSamplesRef.current,
+      },
     }
 
     try {
@@ -751,9 +1066,19 @@ function App() {
       track('survey_submit_success')
       setSubmitSuccess(true)
       setToast('提交成功！再次感谢您的参与！')
+      try {
+        downloadJson(buildExportPayload())
+      } catch {
+        // ignore export failure
+      }
     } catch {
       track('survey_submit_failed')
       setToast('提交失败，请检查网络后重试')
+      try {
+        downloadJson(buildExportPayload())
+      } catch {
+        // ignore
+      }
     } finally {
       setSubmitting(false)
     }
@@ -890,7 +1215,7 @@ function App() {
     const item = FORMAL_ITEMS.find((it) => it.id === normalizedItemId)
     if (!item) return
     openFormalPanel(item)
-  }, [formalAnsweredIds])
+  }, [openFormalPanel])
 
   const handleFormalOptionHoverStart = (optionId: string) => {
     if (!formalPanelItem) return
@@ -1020,6 +1345,7 @@ function App() {
               </div>
             )}
             <ThreeScene
+              ref={sceneRef}
               items={practiceSceneItems}
               onItemClick={handlePracticeItemClick}
               onActiveItemsChange={setPracticeActiveItemIds}
@@ -1054,7 +1380,17 @@ function App() {
                           <button
                             key={opt.id}
                             className={practiceSelected === opt.id ? 'opt selected' : 'opt'}
+                            onMouseEnter={() => recordOptionHoverEnter(opt.id)}
+                            onMouseLeave={() => recordOptionHoverLeave(opt.id)}
                             onClick={() => {
+                              if (!firstClickRef.current) {
+                                firstClickRef.current = {
+                                  ts: Date.now(),
+                                  itemId: PRACTICE_QUESTION.id,
+                                  optionId: opt.id,
+                                  optionType: opt.optionType,
+                                }
+                              }
                               setPracticeSelected(opt.id)
                               track('practice_option_selected', { optionId: opt.id })
                             }}
@@ -1102,6 +1438,11 @@ function App() {
           <div className="scene-overlay-top scene-overlay-top--formal">
             <div className="scene-top-actions">
               <div className="counter counter--overlay">{formalAnswers.length}/{FORMAL_ITEMS.length} 已完成</div>
+              {!formalCompleted && (
+                <button type="button" className="ghost-btn ghost-btn--skip-test" onClick={skipFormalStep}>
+                  跳过（测试）
+                </button>
+              )}
               {showFormalExitButton ? (
                 <button className="ghost-btn ghost-btn--formal-exit" onClick={exitFormalToSurvey}>
                   退出实验
@@ -1122,9 +1463,10 @@ function App() {
               <span>本阶段已进行：{Math.floor(formalDurationMs / 1000)}s</span>
             </div>
             <ThreeScene
+              ref={sceneRef}
               items={formalSceneItems}
               onItemClick={handleFormalItemClick}
-              interactionLocked={Boolean(formalPanelItem)}
+              interactionLocked={!!formalPanelItem}
               forceHistoricModels={allHistoricPreview}
               initialCameraPosition={[7, 5, -7]}
               initialTarget={[7, 5, -2]}
@@ -1149,9 +1491,23 @@ function App() {
                   <button
                     key={opt.id}
                     className={formalSelected === opt.id ? 'opt selected' : 'opt'}
-                    onMouseEnter={() => handleFormalOptionHoverStart(opt.id)}
-                    onMouseLeave={() => handleFormalOptionHoverEnd(opt.id)}
+                    onMouseEnter={() => {
+                      handleFormalOptionHoverStart(opt.id)
+                      recordOptionHoverEnter(opt.id)
+                    }}
+                    onMouseLeave={() => {
+                      handleFormalOptionHoverEnd(opt.id)
+                      recordOptionHoverLeave(opt.id)
+                    }}
                     onClick={() => {
+                      if (!firstClickRef.current) {
+                        firstClickRef.current = {
+                          ts: Date.now(),
+                          itemId: formalPanelItem.id,
+                          optionId: opt.id,
+                          optionType: opt.optionType,
+                        }
+                      }
                       setFormalSelected(opt.id)
                       track('formal_option_selected', {
                         itemId: formalPanelItem.id,
@@ -1323,6 +1679,14 @@ function App() {
       {!loading && step === 'survey' && submitSuccess && (
         <section className="survey-success-only">
           <h2>提交成功！再次感谢您的参与！</h2>
+          <p className="survey-success-tip">实验数据已自动下载为 JSON 文件。若未收到或需再次保存，请点击下方按钮。</p>
+          <button
+            type="button"
+            className="start-btn"
+            onClick={() => downloadJson(buildExportPayload())}
+          >
+            重新下载数据 (JSON)
+          </button>
         </section>
       )}
 
