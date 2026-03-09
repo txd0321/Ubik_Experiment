@@ -221,7 +221,7 @@ const FORMAL_ITEMS: ItemQuestion[] = [
     options: [
       { id: 'A', label: 'A. 墙上的白色横梁', optionType: 'visual' },
       { id: 'B', label: 'B. 绿色盆栽', optionType: 'baseline' },
-      { id: 'C', label: 'C. 三叶电风扇', optionType: 'semantic' },
+      { id: 'C', label: 'C. 智能无叶风扇', optionType: 'semantic' },
       { id: 'D', label: 'D. 铸铁暖气片', optionType: 'narrative' },
     ],
   },
@@ -1291,10 +1291,12 @@ function App() {
 
       {!loading && step === 'welcome' && (
         <section className="panel hero">
-          <h2>尤比克退行认知匹配实验</h2>
+          <h2>Ubik退行认知匹配实验</h2>
           <p className="hero-intro">
-            在著名科幻作家菲利普迪克所著小说《尤比克》的世界观中，现代物品会“退行”为1930年代在功能上对应的物品，你将进入
-            2030现代客厅并完成 10 道判断题。
+            在著名科幻作家Philip.K.Dick所著《Ubik》世界观中，现代物品会“退行（regression/decay）”为1930年代在功能上对应的物品。 
+            “退行”象征着物体随时间发生的逆向演化与形态衰败。它表现为现代精密物体向原始、陈旧形式的坍缩（例如：一台电脑退化为打字机，甚至是一叠纸）。
+            这种现象挑战了智能体对现实稳定性的认知。
+            现在你将进入2030现代客厅并完成 20 道判断题。
           </p>
 
           <label className="phone-input-row">
@@ -1530,7 +1532,7 @@ function App() {
       {!loading && step === 'survey' && !submitSuccess && (
         <section className="panel survey">
           <h2>实验完成！感谢你的参与！</h2>
-          <p className="survey-intro">针对你刚才交互过的 10 组物品，请根据实际感受打分。</p>
+          <p className="survey-intro">针对你刚才交互过的 20 组物品，请根据实际感受打分。</p>
 
           <label>
             1. 回顾刚才的交互过程，请评估各物品“退行判断”的整体难度（1-7分）
@@ -1605,7 +1607,7 @@ function App() {
           </fieldset>
 
           <fieldset>
-            <legend>4. 你是否察觉到环境中其他细节变化（如灯光、噪声、墙面等）？</legend>
+            <legend>4. 你是否察觉到环境中其他细节变化（如灯光、墙面、物品位置等）？</legend>
             {['是', '否'].map((item) => (
               <label key={item} className="radio-line">
                 <input
