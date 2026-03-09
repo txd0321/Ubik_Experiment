@@ -19,6 +19,16 @@ export type SubmitPayload = {
   surveyData: unknown
   surveyQuestionDurationsMs: Record<string, number>
   eventBufferLength: number
+  /** Per-question telemetry including screenshots (optional for backend). */
+  formalInteractionRecords?: unknown[]
+  /** Movement trajectory: roomOrigin, roomSize, points, skippedTimestamps, postSubmitSamples (optional). */
+  movementTrajectory?: {
+    roomOrigin: [number, number, number]
+    roomSize: [number, number, number]
+    points: number[][]
+    skippedTimestamps?: number[]
+    postSubmitSamples?: Array<{ afterQuestionIndex: number; point: number[] }>
+  }
 }
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
