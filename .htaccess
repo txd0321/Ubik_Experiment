@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteBase /ubik/
+
+# 如果请求的是真实存在的文件或目录，就正常访问
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 其它请求统一回退到 /ubik/index.html（交给前端路由处理）
+RewriteRule . /ubik/index.html [L]
