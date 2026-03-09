@@ -72,13 +72,13 @@ type SceneCore = {
 const EXTRA_ITEM_ID_PREFIX = '__extra_slot_'
 
 const NO_GREEN_MODEL_PATHS = new Set([
-  '/assets/models/nonitr_04_2030_chair_bedroom.glb',
-  '/assets/models/nonitr_05_2030_sofa_bedroom.glb',
-  '/assets/models/nonitr_02_2030_bed_bedroom.glb',
-  '/assets/models/nonitr_03_2030_teaTable_bedroom.glb',
-  '/assets/models/itr_10_2030_electricLighter_bedroom.glb',
-  '/assets/models/itr_03_2030_holographicProjectorA_bedroom.glb',
-  '/assets/models/itr_03_2030_holographicProjectorB_bedroom.glb',
+  '/assets/models/nonitr_04_2030_chair_bedroom_opt.glb',
+  '/assets/models/nonitr_05_2030_sofa_bedroom_opt.glb',
+  '/assets/models/nonitr_02_2030_bed_bedroom_opt.glb',
+  '/assets/models/nonitr_03_2030_teaTable_bedroom_opt.glb',
+  '/assets/models/itr_10_2030_electricLighter_bedroom_opt.glb',
+  '/assets/models/itr_03_2030_holographicProjectorA_bedroom_opt.glb',
+  '/assets/models/itr_03_2030_holographicProjectorB_bedroom_opt.glb',
 ])
 
 function fitModelToTarget(model: THREE.Object3D, targetSize = 1.1) {
