@@ -77,12 +77,19 @@ type FormalInteractionRecord = InteractionRecord & {
 }
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+
+const safeRandomId = () => {
+  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID()
+  }
+  return uid()
+}
 const USER_ID_STORAGE_KEY = 'ubik_user_id'
 
 function getOrCreateUserId() {
   const cached = window.localStorage.getItem(USER_ID_STORAGE_KEY)
   if (cached) return cached
-  const next = window.crypto.randomUUID()
+  const next = safeRandomId()
   window.localStorage.setItem(USER_ID_STORAGE_KEY, next)
   return next
 }
@@ -697,7 +704,7 @@ function App() {
     }
     const now = Date.now()
     panelOpenAtRef.current = now
-    currentInteractionIdRef.current = window.crypto.randomUUID()
+    currentInteractionIdRef.current = safeRandomId()
     firstClickRef.current = null
     hoverTrackerRef.current = PRACTICE_QUESTION.options.reduce(
       (acc, o) => ({ ...acc, [o.id]: { startMs: null, totalMs: 0 } }),
@@ -810,7 +817,7 @@ function App() {
       formalOptionHoverStartRef.current = {}
       formalOptionHoverDurationsRef.current = {}
       formalOptionHoverCountsRef.current = {}
-      currentInteractionIdRef.current = window.crypto.randomUUID()
+      currentInteractionIdRef.current = safeRandomId()
       firstClickRef.current = null
       hoverTrackerRef.current = item.options.reduce(
         (acc, o) => ({ ...acc, [o.id]: { startMs: null, totalMs: 0 } }),

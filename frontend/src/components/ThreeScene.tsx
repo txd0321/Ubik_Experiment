@@ -6,6 +6,13 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DEFAULT_ITEM_CONFIGS, type ItemPlacementConfig } from '../config/modelPlacement'
 
+const assetUrl = (relativePath: string) => {
+  const base = import.meta.env.BASE_URL || '/'
+  const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base
+  const normalizedPath = relativePath.replace(/^\/+/, '')
+  return `${normalizedBase}/${normalizedPath}`
+}
+
 type SceneItem = {
   id: string
   name: string
@@ -80,13 +87,13 @@ type SceneCore = {
 const EXTRA_ITEM_ID_PREFIX = '__extra_slot_'
 
 const NO_GREEN_MODEL_PATHS = new Set([
-  '/assets/models/nonitr_04_2030_chair_bedroom_opt.glb',
-  '/assets/models/nonitr_05_2030_sofa_bedroom_opt.glb',
-  '/assets/models/nonitr_02_2030_bed_bedroom_opt.glb',
-  '/assets/models/nonitr_03_2030_teaTable_bedroom_opt.glb',
-  '/assets/models/itr_10_2030_electricLighter_bedroom_opt.glb',
-  '/assets/models/itr_03_2030_holographicProjectorA_bedroom_opt.glb',
-  '/assets/models/itr_03_2030_holographicProjectorB_bedroom_opt.glb',
+  assetUrl('assets/models/nonitr_04_2030_chair_bedroom_opt.glb'),
+  assetUrl('assets/models/nonitr_05_2030_sofa_bedroom_opt.glb'),
+  assetUrl('assets/models/nonitr_02_2030_bed_bedroom_opt.glb'),
+  assetUrl('assets/models/nonitr_03_2030_teaTable_bedroom_opt.glb'),
+  assetUrl('assets/models/itr_10_2030_electricLighter_bedroom_opt.glb'),
+  assetUrl('assets/models/itr_03_2030_holographicProjectorA_bedroom_opt.glb'),
+  assetUrl('assets/models/itr_03_2030_holographicProjectorB_bedroom_opt.glb'),
 ])
 
 function fitModelToTarget(model: THREE.Object3D, targetSize = 1.1) {
@@ -323,55 +330,55 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     wallpaperMap.wrapT = THREE.ClampToEdgeWrapping
     wallpaperMap.repeat.set(1, 1)
 
-    const wallNormalMap = textureLoader.load('/assets/textures/wall_Normal.png')
+    const wallNormalMap = textureLoader.load(assetUrl('assets/textures/wall_Normal.png'))
     wallNormalMap.wrapS = THREE.RepeatWrapping
     wallNormalMap.wrapT = THREE.RepeatWrapping
     wallNormalMap.repeat.copy(wallpaperMap.repeat)
 
-    const wallRoughnessMap = textureLoader.load('/assets/textures/wall_Roughness.jpg')
+    const wallRoughnessMap = textureLoader.load(assetUrl('assets/textures/wall_Roughness.jpg'))
     wallRoughnessMap.wrapS = THREE.RepeatWrapping
     wallRoughnessMap.wrapT = THREE.RepeatWrapping
     wallRoughnessMap.repeat.copy(wallpaperMap.repeat)
 
-    const wallMetalnessMap = textureLoader.load('/assets/textures/wall_Metallic.jpg')
+    const wallMetalnessMap = textureLoader.load(assetUrl('assets/textures/wall_Metallic.jpg'))
     wallMetalnessMap.wrapS = THREE.RepeatWrapping
     wallMetalnessMap.wrapT = THREE.RepeatWrapping
     wallMetalnessMap.repeat.copy(wallpaperMap.repeat)
 
-    const wall1930BaseMap = textureLoader.load('/assets/textures/scuffed_cement_diff_4k.jpg')
+    const wall1930BaseMap = textureLoader.load(assetUrl('assets/textures/scuffed_cement_diff_4k.jpg'))
     wall1930BaseMap.colorSpace = THREE.SRGBColorSpace
     wall1930BaseMap.wrapS = THREE.RepeatWrapping
     wall1930BaseMap.wrapT = THREE.RepeatWrapping
     wall1930BaseMap.repeat.set(15.0, 15.0)
 
-    const wall1930HeightMap = textureLoader.load('/assets/textures/scuffed_cement_disp_4k.png')
+    const wall1930HeightMap = textureLoader.load(assetUrl('assets/textures/scuffed_cement_disp_4k.png'))
     wall1930HeightMap.wrapS = THREE.RepeatWrapping
     wall1930HeightMap.wrapT = THREE.RepeatWrapping
     wall1930HeightMap.repeat.copy(wall1930BaseMap.repeat)
 
-    const floorNormalMap = textureLoader.load('/assets/textures/floor_normal.png')
+    const floorNormalMap = textureLoader.load(assetUrl('assets/textures/floor_normal.png'))
     floorNormalMap.wrapS = THREE.RepeatWrapping
     floorNormalMap.wrapT = THREE.RepeatWrapping
     floorNormalMap.repeat.set(4, 4)
 
-    const floor2030BaseMap = textureLoader.load('/assets/textures/granite_tile_diff_4k.jpg')
+    const floor2030BaseMap = textureLoader.load(assetUrl('assets/textures/granite_tile_diff_4k.jpg'))
     floor2030BaseMap.colorSpace = THREE.SRGBColorSpace
     floor2030BaseMap.wrapS = THREE.RepeatWrapping
     floor2030BaseMap.wrapT = THREE.RepeatWrapping
     floor2030BaseMap.repeat.set(1, 1)
 
-    const floor2030HeightMap = textureLoader.load('/assets/textures/granite_tile_disp_4k.png')
+    const floor2030HeightMap = textureLoader.load(assetUrl('assets/textures/granite_tile_disp_4k.png'))
     floor2030HeightMap.wrapS = THREE.RepeatWrapping
     floor2030HeightMap.wrapT = THREE.RepeatWrapping
     floor2030HeightMap.repeat.set(1, 1)
 
-    const floor1930BaseMap = textureLoader.load('/assets/textures/floor_1930_bedroom_basecolor.jpg')
+    const floor1930BaseMap = textureLoader.load(assetUrl('assets/textures/floor_1930_bedroom_basecolor.jpg'))
     floor1930BaseMap.colorSpace = THREE.SRGBColorSpace
     floor1930BaseMap.wrapS = THREE.RepeatWrapping
     floor1930BaseMap.wrapT = THREE.RepeatWrapping
     floor1930BaseMap.repeat.set(4, 4)
 
-    const floor1930HeightMap = textureLoader.load('/assets/textures/floor_1930_bedroom_height.png')
+    const floor1930HeightMap = textureLoader.load(assetUrl('assets/textures/floor_1930_bedroom_height.png'))
     floor1930HeightMap.wrapS = THREE.RepeatWrapping
     floor1930HeightMap.wrapT = THREE.RepeatWrapping
     floor1930HeightMap.repeat.set(4, 4)
@@ -856,7 +863,7 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
       } catch {
         const fileName = path.split('/').pop()
         if (!fileName) throw new Error('invalid model path')
-        const backupPath = `/assets/models/_backup_original_glb/${fileName}`
+        const backupPath = assetUrl(`assets/models/_backup_original_glb/${fileName}`)
         return await gltfLoader.loadAsync(backupPath)
       }
     }

@@ -17,7 +17,7 @@ export type ModelPlacement1930 = {
 
 export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
   {
-    historicModelPath: '/assets/models/itr_09_1930_heating_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_09_1930_heating_bedroom_opt.glb',
     historicPosition: [-7.6, 0, -1],
     historicTargetSize: 3.3,
     historicRotationX: 0,
@@ -25,7 +25,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_08_1930_handmadeCoffeeTools_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_08_1930_handmadeCoffeeTools_bedroom_opt.glb',
     historicPosition: [-5, 3.5, -7],
     historicTargetSize: 1.7,
     historicRotationX: 0,
@@ -33,7 +33,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_07_1930_pottedPlant_bedroom_opt.glb',
+    historicModelPath: 'assets/models/nonitr_07_1930_pottedPlant_bedroom_opt.glb',
     historicPosition: [1, 0, -7],
     historicTargetSize: 5.2,
     historicRotationX: 0,
@@ -41,7 +41,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_07_1930_purse_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_07_1930_purse_bedroom_opt.glb',
     historicPosition: [-1.9, 2, 5.4],
     historicTargetSize: 1.1,
     historicRotationX: 0,
@@ -49,7 +49,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_06_1930_frontDoor_bedroom_opt.glb',
+    historicModelPath: 'assets/models/nonitr_06_1930_frontDoor_bedroom_opt.glb',
     historicPosition: [5.2, 0, -8],
     historicTargetSize: 8,
     historicRotationX: 0,
@@ -57,7 +57,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_06_1930_envelope_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_06_1930_envelope_bedroom_opt.glb',
     historicPosition: [-6, 2, -4.5],
     historicTargetSize: 1,
     historicRotationX: Math.PI / 2,
@@ -65,7 +65,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_05_1930_typewriter_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_05_1930_typewriter_bedroom_opt.glb',
     historicPosition: [-4, 3.4, -4.5],
     historicTargetSize: 1.3,
     historicRotationX: 0,
@@ -73,7 +73,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_02_1930_phonograph_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_02_1930_phonograph_bedroom_opt.glb',
     historicPosition: [-6.9, 3.8, -7.5],
     historicTargetSize: 2.1,
     historicRotationX: 0,
@@ -81,7 +81,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_01_1930_table_bedroom_opt.glb',
+    historicModelPath: 'assets/models/nonitr_01_1930_table_bedroom_opt.glb',
     historicPosition: [-4.8, 0, -5.7],
     historicTargetSize: 7,
     historicRotationX: 0,
@@ -89,7 +89,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_01_1930_spray_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_01_1930_spray_bedroom_opt.glb',
     historicPosition: [-3, 1.8, 5.5],
     historicTargetSize: 1.5,
     historicRotationX: 0,
@@ -97,7 +97,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_04_1930_chair_bedroom_opt.glb',
+    historicModelPath: 'assets/models/nonitr_04_1930_chair_bedroom_opt.glb',
     historicPosition: [-5, 0, -1.5],
     historicTargetSize: 4,
     historicRotationX: 0,
@@ -105,7 +105,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_05_1930_sofa_bedroom_opt.glb',
+    historicModelPath: 'assets/models/nonitr_05_1930_sofa_bedroom_opt.glb',
     historicPosition: [-6.5, 0, 4.5],
     historicTargetSize: 6.5,
     historicRotationX: 0,
@@ -113,7 +113,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_02_1930_bed_bedroom_opt.glb',
+    historicModelPath: 'assets/models/nonitr_02_1930_bed_bedroom_opt.glb',
     historicPosition: [4.6, 0, 4.6],
     historicTargetSize: 7.5,
     historicRotationX: 0,
@@ -121,7 +121,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_03_1930_teaTable_bedroom_opt.glb',
+    historicModelPath: 'assets/models/nonitr_03_1930_teaTable_bedroom_opt.glb',
     historicPosition: [-2.5, 0, 4.5],
     historicTargetSize: 4,
     historicRotationX: 0,
@@ -129,7 +129,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_10_1930_matchstick_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_10_1930_matchstick_bedroom_opt.glb',
     historicPosition: [-5.8, 1.8, 3.5],
     historicTargetSize: 1,
     historicRotationX: 0,
@@ -137,7 +137,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_03_1930_radio_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_03_1930_radio_bedroom_opt.glb',
     historicPosition: [8, 2, 4.2],
     historicTargetSize: 7.5,
     historicRotationX: 0,
@@ -145,7 +145,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_03_1930_radio_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_03_1930_radio_bedroom_opt.glb',
     historicPosition: [-1.8, 2, 3.6],
     historicTargetSize: 1.2,
     historicRotationX: 0,
@@ -153,7 +153,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_04_1930_keroseneLamp_bedroom_opt.glb',
+    historicModelPath: 'assets/models/itr_04_1930_keroseneLamp_bedroom_opt.glb',
     historicPosition: [1, 6, -7.5],
     historicTargetSize: 1.6,
     historicRotationX: 0,
@@ -161,7 +161,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_11_1930_sputum_bowl_toilet_opt.glb',
+    historicModelPath: 'assets/models/itr_11_1930_sputum_bowl_toilet_opt.glb',
     historicPosition: [-5, 0, 14],
     historicTargetSize: 1,
     historicRotationX: 0,
@@ -169,7 +169,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_12_1930_tooth_powder_toilet_opt.glb',
+    historicModelPath: 'assets/models/itr_12_1930_tooth_powder_toilet_opt.glb',
     historicPosition: [-0.5, 3, 15.6],
     historicTargetSize: 1,
     historicRotationX: 0,
@@ -177,7 +177,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_13_1930_hair_dryer_toilet_opt.glb',
+    historicModelPath: 'assets/models/itr_13_1930_hair_dryer_toilet_opt.glb',
     historicPosition: [-1, 3, 15.6],
     historicTargetSize: 1.4,
     historicRotationX: 0,
@@ -185,7 +185,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_14_1930_shower_bucket_toilet_opt.glb',
+    historicModelPath: 'assets/models/itr_14_1930_shower_bucket_toilet_opt.glb',
     historicPosition: [-6.7, 0, 15.7],
     historicTargetSize: 5.3,
     historicRotationX: 0,
@@ -193,7 +193,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_15_1930_pitcher_basin_toilet_opt.glb',
+    historicModelPath: 'assets/models/itr_15_1930_pitcher_basin_toilet_opt.glb',
     historicPosition: [-0.9, 0.1, 15.6],
     historicTargetSize: 4.6,
     historicRotationX: 0,
@@ -201,7 +201,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_16_1930_icebox_kitchen_opt.glb',
+    historicModelPath: 'assets/models/itr_16_1930_icebox_kitchen_opt.glb',
     historicPosition: [10, 0, -0.3],
     historicTargetSize: 2.6,
     historicRotationX: 0,
@@ -209,7 +209,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_17_1930_iron_pot_kitchen_opt.glb',
+    historicModelPath: 'assets/models/itr_17_1930_iron_pot_kitchen_opt.glb',
     historicPosition: [14, 2.7, -1],
     historicTargetSize: 1.8,
     historicRotationX: 0,
@@ -217,7 +217,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_18_1930_broom_dustpan_kitchen_opt.glb',
+    historicModelPath: 'assets/models/itr_18_1930_broom_dustpan_kitchen_opt.glb',
     historicPosition: [9, 0, -7],
     historicTargetSize: 2,
     historicRotationX: 0,
@@ -225,7 +225,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_19_1930_copper_kettle_kitchen_opt.glb',
+    historicModelPath: 'assets/models/itr_19_1930_copper_kettle_kitchen_opt.glb',
     historicPosition: [13.8, 2.9, -5.8],
     historicTargetSize: 1,
     historicRotationX: 0,
@@ -233,7 +233,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/itr_20_1930_stove_fire_kitchen_opt.glb',
+    historicModelPath: 'assets/models/itr_20_1930_stove_fire_kitchen_opt.glb',
     historicPosition: [11, 0.1, -7],
     historicTargetSize: 2.7,
     historicRotationX: 0,
@@ -241,7 +241,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_08_1930_cupboard_chimney_kitchen_opt.glb',
+    historicModelPath: 'assets/models/nonitr_08_1930_cupboard_chimney_kitchen_opt.glb',
     historicPosition: [14, 0, -3],
     historicTargetSize: 7.4,
     historicRotationX: 0,
@@ -249,7 +249,7 @@ export const MODEL_PLACEMENT_1930: ModelPlacement1930[] = [
     historicRotationZ: 0,
   },
   {
-    historicModelPath: '/assets/models/nonitr_09_1930_window_kitchen_opt.glb',
+    historicModelPath: 'assets/models/nonitr_09_1930_window_kitchen_opt.glb',
     historicPosition: [15.8, 3.6, -5.1],
     historicTargetSize: 4,
     historicRotationX: 0,
