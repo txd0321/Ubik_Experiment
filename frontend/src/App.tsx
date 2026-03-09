@@ -709,6 +709,26 @@ function App() {
     }
   }
 
+  const skipFormalStep = () => {
+    if (formalCompleted) return
+    const dummyAnswers: FormalAnswer[] = FORMAL_ITEMS.map((item, orderIndex) => ({
+      itemId: item.id,
+      selectedOptionId: item.options[0]?.id ?? '',
+      durationMs: 0,
+      orderIndex,
+      optionHoverDurationsMs: {},
+      optionHoverCounts: {},
+    }))
+    setFormalAnswers(dummyAnswers)
+    setFormalCompleted(true)
+    track('formal_skip_test')
+    track('formal_environment_transition_started')
+    window.setTimeout(() => {
+      track('formal_environment_transition_finished')
+      setShowFormalExitButton(true)
+    }, 5000)
+  }
+
   const markSurveyAnswered = (questionKey: keyof SurveyData) => {
     const openedAt = surveyQuestionOpenAtRef.current[questionKey]
     if (!openedAt) return
@@ -1102,6 +1122,11 @@ function App() {
           <div className="scene-overlay-top scene-overlay-top--formal">
             <div className="scene-top-actions">
               <div className="counter counter--overlay">{formalAnswers.length}/{FORMAL_ITEMS.length} 已完成</div>
+              {!formalCompleted && (
+                <button type="button" className="ghost-btn ghost-btn--skip-test" onClick={skipFormalStep}>
+                  跳过（测试）
+                </button>
+              )}
               {showFormalExitButton ? (
                 <button className="ghost-btn ghost-btn--formal-exit" onClick={exitFormalToSurvey}>
                   退出实验
