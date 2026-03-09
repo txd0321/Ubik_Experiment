@@ -980,8 +980,10 @@ export default function ThreeScene({
       root.add(glowHalo)
 
       const targetSize = itemConfigs[slot]?.targetSize ?? 1
-      const haloBaseScale = THREE.MathUtils.clamp(0.62 + targetSize * 0.06, 0.72, 1.15)
-      const haloPulseAmplitude = THREE.MathUtils.clamp(0.06 + targetSize * 0.012, 0.07, 0.15)
+      const baseHaloScale = THREE.MathUtils.clamp(0.62 + targetSize * 0.06, 0.72, 1.15)
+      const baseHaloPulseAmplitude = THREE.MathUtils.clamp(0.06 + targetSize * 0.012, 0.07, 0.15)
+      const haloBaseScale = scenePreset === 'practice' ? baseHaloScale * 1.5 : baseHaloScale
+      const haloPulseAmplitude = scenePreset === 'practice' ? baseHaloPulseAmplitude * 1.35 : baseHaloPulseAmplitude
 
       const isInteractive = !item.id.includes('-nonitr-')
 
