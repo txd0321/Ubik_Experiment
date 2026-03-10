@@ -1,0 +1,13 @@
+[project]
+name = "ubik-cos-tools"
+version = "0.1.0"
+description = "Utility scripts for uploading models to Tencent COS and generating presigned URLs."
+requires-python = ">=3.9"
+dependencies = [
+  "boto3>=1.26,<2",
+  "python-dotenv>=1,<2",
+]
+
+[tool.uv]
+package = false
+

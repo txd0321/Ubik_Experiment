@@ -12,7 +12,8 @@
   "dependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "three": "^0.181.1"
+    "three": "^0.181.1",
+    "cos-js-sdk-v5": "^1.4.20"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

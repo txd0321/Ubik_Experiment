@@ -430,6 +430,8 @@ function App() {
   const [formalSelected, setFormalSelected] = useState('')
   const [formalAnswers, setFormalAnswers] = useState<FormalAnswer[]>([])
   const [formalCompleted, setFormalCompleted] = useState(false)
+  const [formalReady, setFormalReady] = useState(false)
+  const [formalPreloadProgress, setFormalPreloadProgress] = useState({ loaded: 0, total: 0, isLoading: false })
   const [showFormalExitButton, setShowFormalExitButton] = useState(() => isFormalExitPreviewEnabled())
   const [forceAllCompletedPreview] = useState(() => isForceAllCompletedEnabled())
   const [allHistoricPreview] = useState(() => isAllHistoricPreviewEnabled())
@@ -560,7 +562,10 @@ function App() {
       track('practice_scene_loaded')
     }
     if (step === 'formal') {
-      formalStepStartedAtRef.current = Date.now()
+      formalStepStartedAtRef.current = 0
+      setFormalReady(false)
+      setFormalPreloadProgress({ loaded: 0, total: 0, isLoading: false })
+      setFormalDurationMs(0)
       setFormalCompleted(forceAllCompletedPreview)
       setShowFormalExitButton(isFormalExitPreviewEnabled() || forceAllCompletedPreview)
       track('formal_scene_loaded')
@@ -574,6 +579,17 @@ function App() {
       }
     }
   }, [sessionId, step])
+
+  useEffect(() => {
+    if (step !== 'formal') return
+    if (!formalReady) return
+    if (formalStepStartedAtRef.current) return
+    formalStepStartedAtRef.current = Date.now()
+    track('formal_exploration_enabled', {
+      preloadLoaded: formalPreloadProgress.loaded,
+      preloadTotal: formalPreloadProgress.total,
+    })
+  }, [step, formalReady, formalPreloadProgress.loaded, formalPreloadProgress.total, sessionId])
 
 
   useEffect(() => {
@@ -1224,6 +1240,13 @@ function App() {
     openFormalPanel(item)
   }, [openFormalPanel])
 
+  const handleFormalModelLoadProgress = useCallback((progress: { loaded: number; total: number; isLoading: boolean }) => {
+    setFormalPreloadProgress(progress)
+    if (progress.total > 0 && progress.loaded >= progress.total) {
+      setFormalReady(true)
+    }
+  }, [])
+
   const handleFormalOptionHoverStart = (optionId: string) => {
     if (!formalPanelItem) return
     if (formalOptionHoverStartRef.current[optionId]) return
@@ -1442,6 +1465,24 @@ function App() {
 
       {!loading && step === 'formal' && (
         <section className="scene-wrap">
+          {!formalReady && (
+            <div className="scene-loading-overlay" role="status" aria-live="polite">
+              <h3>正在准备正式实验场景</h3>
+              <p>模型加载中：{formalPreloadProgress.loaded}/{formalPreloadProgress.total}</p>
+              <div className="scene-loading-bar">
+                <span
+                  style={{
+                    width: `${
+                      formalPreloadProgress.total > 0
+                        ? (formalPreloadProgress.loaded / formalPreloadProgress.total) * 100
+                        : 0
+                    }%`,
+                  }}
+                />
+              </div>
+              <small>加载完成后将开始计时，并开放场景探索。</small>
+            </div>
+          )}
           <div className="scene-overlay-top scene-overlay-top--formal">
             <div className="scene-top-actions">
               <div className="counter counter--overlay">{formalAnswers.length}/{FORMAL_ITEMS.length} 已完成</div>
@@ -1473,7 +1514,8 @@ function App() {
               ref={sceneRef}
               items={formalSceneItems}
               onItemClick={handleFormalItemClick}
-              interactionLocked={!!formalPanelItem}
+              onInitialModelLoadProgress={handleFormalModelLoadProgress}
+              interactionLocked={!!formalPanelItem || !formalReady}
               forceHistoricModels={allHistoricPreview}
               initialCameraPosition={[7, 5, -7]}
               initialTarget={[7, 5, -2]}

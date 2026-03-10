@@ -459,6 +459,51 @@ button:disabled {
   text-align: center;
 }
 
+.scene-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+  background: rgba(5, 8, 15, 0.82);
+  color: #ffffff;
+  pointer-events: auto;
+}
+
+.scene-loading-overlay h3 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.scene-loading-overlay p {
+  margin: 0;
+  font-size: 18px;
+}
+
+.scene-loading-overlay small {
+  opacity: 0.9;
+}
+
+.scene-loading-bar {
+  width: min(520px, 80vw);
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.scene-loading-bar > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #50d7ff, #7cf29a);
+  transition: width 0.18s ease;
+}
+
 .items-grid {
   margin-top: 24px;
   display: grid;

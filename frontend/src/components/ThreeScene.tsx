@@ -5,6 +5,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DEFAULT_ITEM_CONFIGS, type ItemPlacementConfig } from '../config/modelPlacement'
+import { getModelDownloadUrl } from '../lib/api'
 
 const assetUrl = (relativePath: string) => {
   const base = import.meta.env.BASE_URL || '/'
@@ -24,6 +25,7 @@ type ThreeSceneProps = {
   items: SceneItem[]
   onItemClick: (id: string) => void
   onActiveItemsChange?: (activeIds: string[]) => void
+  onInitialModelLoadProgress?: (progress: { loaded: number; total: number; isLoading: boolean }) => void
   modelScaleMultiplier?: number
   showAxesHelper?: boolean
   renderUnusedSlots?: boolean
@@ -185,6 +187,7 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
   items,
   onItemClick,
   onActiveItemsChange,
+  onInitialModelLoadProgress,
   modelScaleMultiplier = 1,
   showAxesHelper = false,
   renderUnusedSlots = true,
@@ -200,6 +203,7 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
   const itemsRef = useRef<SceneItem[]>(items)
   const onItemClickRef = useRef(onItemClick)
   const onActiveItemsChangeRef = useRef(onActiveItemsChange)
+  const onInitialModelLoadProgressRef = useRef<ThreeSceneProps['onInitialModelLoadProgress']>(undefined)
   const interactionLockedRef = useRef(interactionLocked)
 
   useImperativeHandle(ref, () => ({
@@ -241,6 +245,10 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
   useEffect(() => {
     onActiveItemsChangeRef.current = onActiveItemsChange
   }, [onActiveItemsChange])
+
+  useEffect(() => {
+    onInitialModelLoadProgressRef.current = onInitialModelLoadProgress
+  }, [onInitialModelLoadProgress])
 
   useEffect(() => {
     interactionLockedRef.current = interactionLocked
@@ -857,9 +865,22 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     const modelCache = new Map<string, THREE.Object3D>()
     const historicModelCache = new Map<number, THREE.Object3D>()
 
+    const resolveModelUrl = async (path: string) => {
+      try {
+        const fileName = path.split('/').pop()
+        if (!fileName) return assetUrl(path)
+        const key = `models/${fileName}`
+        return await getModelDownloadUrl(key)
+      } catch {
+        // 回退到本地静态资源路径
+        return assetUrl(path)
+      }
+    }
+
     const loadGltfWithFallback = async (path: string) => {
       try {
-        return await gltfLoader.loadAsync(path)
+        const primaryUrl = await resolveModelUrl(path)
+        return await gltfLoader.loadAsync(primaryUrl)
       } catch {
         const fileName = path.split('/').pop()
         if (!fileName) throw new Error('invalid model path')
@@ -868,12 +889,34 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
       }
     }
 
-    const loadModelIntoVisual = async (visual: ItemVisual) => {
+    const initialModelLoadState = {
+      total: 0,
+      loaded: 0,
+    }
+    const notifyInitialModelLoadProgress = () => {
+      const { loaded, total } = initialModelLoadState
+      onInitialModelLoadProgressRef.current?.({
+        loaded,
+        total,
+        isLoading: total > 0 && loaded < total,
+      })
+    }
+
+    const loadModelIntoVisual = async (visual: ItemVisual, countTowardsInitialLoad = false) => {
       const config = itemConfigs[visual.slot]
       const modelPath2030 = config?.modelPath
       const modelPath1930 = config?.historicModelPath
       if (!config) return
       const activeModelPath = forceHistoricModels ? modelPath1930 : modelPath2030
+      const shouldTrackInitialLoad =
+        countTowardsInitialLoad &&
+        scenePreset !== 'practice' &&
+        Boolean(activeModelPath)
+
+      if (shouldTrackInitialLoad) {
+        initialModelLoadState.total += 1
+        notifyInitialModelLoadProgress()
+      }
 
       if (scenePreset === 'practice') {
         if (!visualsById.has(visual.id)) return
@@ -939,6 +982,11 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
         updateVisualAppearance(visual)
       } catch {
         // keep placeholder when loading fails
+      } finally {
+        if (shouldTrackInitialLoad) {
+          initialModelLoadState.loaded += 1
+          notifyInitialModelLoadProgress()
+        }
       }
     }
 
@@ -1062,7 +1110,7 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
 
       visualsById.set(item.id, visual)
       clickableRoots.push(root)
-      loadModelIntoVisual(visual)
+      void loadModelIntoVisual(visual, true)
       updateVisualAppearance(visual)
     }
 
@@ -1087,12 +1135,21 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
         )
       })
     }
+    notifyInitialModelLoadProgress()
 
     const moveState = { KeyW: false, KeyA: false, KeyS: false, KeyD: false }
     const moveSpeed = 4
     const lookState = { active: false, lastX: 0, lastY: 0 }
+    const pointerDragState = {
+      isPointerDown: false,
+      downX: 0,
+      downY: 0,
+      dragged: false,
+      suppressNextClick: false,
+    }
     const yawPitch = new THREE.Euler(0, 0, 0, 'YXZ')
     const rotateSensitivity = 0.0025
+    const DRAG_THRESHOLD_PX = 5
 
     const keyDown = (event: KeyboardEvent) => {
       if (!(event.code in moveState)) return
@@ -1158,6 +1215,15 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
         yawPitch.x -= deltaY * rotateSensitivity
         yawPitch.x = THREE.MathUtils.clamp(yawPitch.x, -Math.PI / 2.2, Math.PI / 2.2)
         camera.quaternion.setFromEuler(yawPitch)
+        if (pointerDragState.isPointerDown) {
+          const dragDistance = Math.hypot(
+            event.clientX - pointerDragState.downX,
+            event.clientY - pointerDragState.downY,
+          )
+          if (dragDistance >= DRAG_THRESHOLD_PX) {
+            pointerDragState.dragged = true
+          }
+        }
         return
       }
 
@@ -1175,6 +1241,10 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     const onMouseDown = (event: MouseEvent) => {
       if (interactionLockedRef.current) return
       if (event.button !== 0) return
+      pointerDragState.isPointerDown = true
+      pointerDragState.downX = event.clientX
+      pointerDragState.downY = event.clientY
+      pointerDragState.dragged = false
       lookState.active = true
       lookState.lastX = event.clientX
       lookState.lastY = event.clientY
@@ -1182,12 +1252,19 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     }
 
     const onMouseUp = () => {
+      pointerDragState.suppressNextClick = pointerDragState.dragged
+      pointerDragState.isPointerDown = false
+      pointerDragState.dragged = false
       lookState.active = false
       renderer.domElement.style.cursor = 'default'
     }
 
     const onClick = (event: MouseEvent) => {
       if (interactionLockedRef.current) return
+      if (pointerDragState.suppressNextClick) {
+        pointerDragState.suppressNextClick = false
+        return
+      }
       if (lookState.active) return
       const targetItemId = resolveHoveredItemId(event)
       if (!targetItemId) return
@@ -1449,6 +1526,8 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
       window.removeEventListener('keydown', keyDown)
       window.removeEventListener('keyup', keyUp)
       window.removeEventListener('blur', blurReset)
+      renderer.domElement.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('mouseup', onMouseUp)
       renderer.domElement.removeEventListener('mousemove', onPointerMove)
       renderer.domElement.removeEventListener('click', onClick)
       renderer.domElement.style.cursor = 'default'
