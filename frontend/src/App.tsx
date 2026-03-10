@@ -1516,6 +1516,7 @@ function App() {
               onItemClick={handleFormalItemClick}
               onInitialModelLoadProgress={handleFormalModelLoadProgress}
               interactionLocked={!!formalPanelItem || !formalReady}
+              renderUnusedSlots={false}
               forceHistoricModels={allHistoricPreview}
               initialCameraPosition={[7, 5, -7]}
               initialTarget={[7, 5, -2]}

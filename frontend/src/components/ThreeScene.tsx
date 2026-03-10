@@ -5,13 +5,19 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DEFAULT_ITEM_CONFIGS, type ItemPlacementConfig } from '../config/modelPlacement'
-import { getModelDownloadUrl } from '../lib/api'
+import { getAssetProxyUrl, getModelDownloadUrl } from '../lib/api'
 
 const assetUrl = (relativePath: string) => {
   const base = import.meta.env.BASE_URL || '/'
   const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base
   const normalizedPath = relativePath.replace(/^\/+/, '')
   return `${normalizedBase}/${normalizedPath}`
+}
+
+function buildModelObjectKey(path: string) {
+  const fileName = path.split('/').pop()
+  if (!fileName) return null
+  return `models/${fileName}`
 }
 
 type SceneItem = {
@@ -270,6 +276,51 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     const mount = mountRef.current
     if (!mount) return
 
+    const presignedUrlCache = new Map<string, string>()
+    const presignedUrlInFlight = new Map<string, Promise<string>>()
+
+    const prefetchPresignedUrlByPath = (path: string) => {
+      const key = buildModelObjectKey(path)
+      if (!key) return
+      if (presignedUrlCache.has(key) || presignedUrlInFlight.has(key)) return
+      const p = getModelDownloadUrl(key)
+        .then((url) => {
+          presignedUrlCache.set(key, url)
+          presignedUrlInFlight.delete(key)
+          return url
+        })
+        .catch((error) => {
+          presignedUrlInFlight.delete(key)
+          throw error
+        })
+      presignedUrlInFlight.set(key, p)
+    }
+
+    const resolveModelUrl = async (path: string) => {
+      const key = buildModelObjectKey(path)
+      if (!key) return assetUrl(path)
+      const cached = presignedUrlCache.get(key)
+      if (cached) return cached
+      const inFlight = presignedUrlInFlight.get(key)
+      if (inFlight) return await inFlight
+      try {
+        const url = await getModelDownloadUrl(key)
+        presignedUrlCache.set(key, url)
+        return url
+      } catch {
+        return assetUrl(path)
+      }
+    }
+
+    // 在 Three.js 大量初始化前先触发 presign 预取，避免 Step2 首分钟“无请求空窗”。
+    itemsRef.current.forEach((item, index) => {
+      const slot = item.slotOverride ?? (index % itemConfigs.length)
+      const config = itemConfigs[slot]
+      if (!config) return
+      const initialPath = forceHistoricModels ? config.historicModelPath : config.modelPath
+      if (initialPath) prefetchPresignedUrlByPath(initialPath)
+    })
+
     const scene = new THREE.Scene()
     scene.background = new THREE.Color(scenePreset === 'practice' ? 0xffffff : 0x202533)
 
@@ -338,64 +389,46 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     wallpaperMap.wrapT = THREE.ClampToEdgeWrapping
     wallpaperMap.repeat.set(1, 1)
 
-    const wallNormalMap = textureLoader.load(assetUrl('assets/textures/wall_Normal.png'))
-    wallNormalMap.wrapS = THREE.RepeatWrapping
-    wallNormalMap.wrapT = THREE.RepeatWrapping
-    wallNormalMap.repeat.copy(wallpaperMap.repeat)
-
-    const wallRoughnessMap = textureLoader.load(assetUrl('assets/textures/wall_Roughness.jpg'))
-    wallRoughnessMap.wrapS = THREE.RepeatWrapping
-    wallRoughnessMap.wrapT = THREE.RepeatWrapping
-    wallRoughnessMap.repeat.copy(wallpaperMap.repeat)
-
-    const wallMetalnessMap = textureLoader.load(assetUrl('assets/textures/wall_Metallic.jpg'))
-    wallMetalnessMap.wrapS = THREE.RepeatWrapping
-    wallMetalnessMap.wrapT = THREE.RepeatWrapping
-    wallMetalnessMap.repeat.copy(wallpaperMap.repeat)
-
-    const wall1930BaseMap = textureLoader.load(assetUrl('assets/textures/scuffed_cement_diff_4k.jpg'))
+    const wall1930BaseMap = textureLoader.load(getAssetProxyUrl('textures/scuffed_cement_diff_4k.jpg'))
     wall1930BaseMap.colorSpace = THREE.SRGBColorSpace
     wall1930BaseMap.wrapS = THREE.RepeatWrapping
     wall1930BaseMap.wrapT = THREE.RepeatWrapping
     wall1930BaseMap.repeat.set(15.0, 15.0)
 
-    const wall1930HeightMap = textureLoader.load(assetUrl('assets/textures/scuffed_cement_disp_4k.png'))
+    const wall1930HeightMap = textureLoader.load(getAssetProxyUrl('textures/scuffed_cement_disp_4k.png'))
     wall1930HeightMap.wrapS = THREE.RepeatWrapping
     wall1930HeightMap.wrapT = THREE.RepeatWrapping
     wall1930HeightMap.repeat.copy(wall1930BaseMap.repeat)
 
-    const floorNormalMap = textureLoader.load(assetUrl('assets/textures/floor_normal.png'))
+    const floorNormalMap = textureLoader.load(getAssetProxyUrl('textures/floor_normal.png'))
     floorNormalMap.wrapS = THREE.RepeatWrapping
     floorNormalMap.wrapT = THREE.RepeatWrapping
     floorNormalMap.repeat.set(4, 4)
 
-    const floor2030BaseMap = textureLoader.load(assetUrl('assets/textures/granite_tile_diff_4k.jpg'))
+    const floor2030BaseMap = textureLoader.load(getAssetProxyUrl('textures/granite_tile_diff_4k.jpg'))
     floor2030BaseMap.colorSpace = THREE.SRGBColorSpace
     floor2030BaseMap.wrapS = THREE.RepeatWrapping
     floor2030BaseMap.wrapT = THREE.RepeatWrapping
     floor2030BaseMap.repeat.set(1, 1)
 
-    const floor2030HeightMap = textureLoader.load(assetUrl('assets/textures/granite_tile_disp_4k.png'))
+    const floor2030HeightMap = textureLoader.load(getAssetProxyUrl('textures/granite_tile_disp_4k.png'))
     floor2030HeightMap.wrapS = THREE.RepeatWrapping
     floor2030HeightMap.wrapT = THREE.RepeatWrapping
     floor2030HeightMap.repeat.set(1, 1)
 
-    const floor1930BaseMap = textureLoader.load(assetUrl('assets/textures/floor_1930_bedroom_basecolor.jpg'))
+    const floor1930BaseMap = textureLoader.load(getAssetProxyUrl('textures/floor_1930_bedroom_basecolor.jpg'))
     floor1930BaseMap.colorSpace = THREE.SRGBColorSpace
     floor1930BaseMap.wrapS = THREE.RepeatWrapping
     floor1930BaseMap.wrapT = THREE.RepeatWrapping
     floor1930BaseMap.repeat.set(4, 4)
 
-    const floor1930HeightMap = textureLoader.load(assetUrl('assets/textures/floor_1930_bedroom_height.png'))
+    const floor1930HeightMap = textureLoader.load(getAssetProxyUrl('textures/floor_1930_bedroom_height.png'))
     floor1930HeightMap.wrapS = THREE.RepeatWrapping
     floor1930HeightMap.wrapT = THREE.RepeatWrapping
     floor1930HeightMap.repeat.set(4, 4)
 
     const maxAnisotropy = renderer.capabilities.getMaxAnisotropy()
     wallpaperMap.anisotropy = maxAnisotropy
-    wallNormalMap.anisotropy = maxAnisotropy
-    wallRoughnessMap.anisotropy = maxAnisotropy
-    wallMetalnessMap.anisotropy = maxAnisotropy
     wall1930BaseMap.anisotropy = maxAnisotropy
     wall1930HeightMap.anisotropy = maxAnisotropy
     floorNormalMap.anisotropy = maxAnisotropy
@@ -407,10 +440,9 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     const roomMaterial = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       map: scenePreset === 'practice' ? null : wallpaperMap,
-      normalMap: scenePreset === 'practice' ? null : wallNormalMap,
-      normalScale: new THREE.Vector2(0.22, 0.22),
-      roughnessMap: scenePreset === 'practice' ? null : wallRoughnessMap,
-      metalnessMap: scenePreset === 'practice' ? null : wallMetalnessMap,
+      normalMap: null,
+      roughnessMap: null,
+      metalnessMap: null,
       roughness: scenePreset === 'practice' ? 0.95 : 0.62,
       metalness: scenePreset === 'practice' ? 0.02 : 0.18,
       emissive: new THREE.Color(scenePreset === 'practice' ? '#000000' : '#2e1a66'),
@@ -466,10 +498,9 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
       const mainCeilingMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         map: wallpaperMap,
-        normalMap: wallNormalMap,
-        normalScale: new THREE.Vector2(0.22, 0.22),
-        roughnessMap: wallRoughnessMap,
-        metalnessMap: wallMetalnessMap,
+        normalMap: null,
+        roughnessMap: null,
+        metalnessMap: null,
         roughness: 0.62,
         metalness: 0.18,
         emissive: new THREE.Color('#2e1a66'),
@@ -519,10 +550,9 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
       const partitionMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         map: wallpaperMap,
-        normalMap: wallNormalMap,
-        normalScale: new THREE.Vector2(0.22, 0.22),
-        roughnessMap: wallRoughnessMap,
-        metalnessMap: wallMetalnessMap,
+        normalMap: null,
+        roughnessMap: null,
+        metalnessMap: null,
         roughness: 0.62,
         metalness: 0.18,
         emissive: new THREE.Color('#2e1a66'),
@@ -550,10 +580,9 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
       const kitchenCeilingMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         map: wallpaperMap,
-        normalMap: wallNormalMap,
-        normalScale: new THREE.Vector2(0.22, 0.22),
-        roughnessMap: wallRoughnessMap,
-        metalnessMap: wallMetalnessMap,
+        normalMap: null,
+        roughnessMap: null,
+        metalnessMap: null,
         roughness: 0.62,
         metalness: 0.18,
         emissive: new THREE.Color('#2e1a66'),
@@ -581,10 +610,9 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
       const toiletCeilingMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         map: wallpaperMap,
-        normalMap: wallNormalMap,
-        normalScale: new THREE.Vector2(0.22, 0.22),
-        roughnessMap: wallRoughnessMap,
-        metalnessMap: wallMetalnessMap,
+        normalMap: null,
+        roughnessMap: null,
+        metalnessMap: null,
         roughness: 0.62,
         metalness: 0.18,
         emissive: new THREE.Color('#2e1a66'),
@@ -865,18 +893,6 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
     const modelCache = new Map<string, THREE.Object3D>()
     const historicModelCache = new Map<number, THREE.Object3D>()
 
-    const resolveModelUrl = async (path: string) => {
-      try {
-        const fileName = path.split('/').pop()
-        if (!fileName) return assetUrl(path)
-        const key = `models/${fileName}`
-        return await getModelDownloadUrl(key)
-      } catch {
-        // 回退到本地静态资源路径
-        return assetUrl(path)
-      }
-    }
-
     const loadGltfWithFallback = async (path: string) => {
       try {
         const primaryUrl = await resolveModelUrl(path)
@@ -912,11 +928,6 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
         countTowardsInitialLoad &&
         scenePreset !== 'practice' &&
         Boolean(activeModelPath)
-
-      if (shouldTrackInitialLoad) {
-        initialModelLoadState.total += 1
-        notifyInitialModelLoadProgress()
-      }
 
       if (scenePreset === 'practice') {
         if (!visualsById.has(visual.id)) return
@@ -1037,6 +1048,9 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
       }
     }
 
+    const initialLoadQueue: ItemVisual[] = []
+    const backgroundLoadQueue: ItemVisual[] = []
+
     const createItemVisual = (item: SceneItem, slot: number, isExtraSlot = false) => {
       const config = itemConfigs[slot]
       if (!config) return
@@ -1110,7 +1124,15 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
 
       visualsById.set(item.id, visual)
       clickableRoots.push(root)
-      void loadModelIntoVisual(visual, true)
+      if (scenePreset === 'practice') {
+        backgroundLoadQueue.push(visual)
+      } else if (!isExtraSlot) {
+        // Step2 初始阶段按顺序加载核心模型，避免“长时间 0%”。
+        initialLoadQueue.push(visual)
+      } else {
+        // 额外槽位不阻塞首屏，后台加载。
+        backgroundLoadQueue.push(visual)
+      }
       updateVisualAppearance(visual)
     }
 
@@ -1135,7 +1157,21 @@ const ThreeScene = forwardRef<ThreeSceneHandle, ThreeSceneProps>(function ThreeS
         )
       })
     }
+    initialModelLoadState.total = initialLoadQueue.length
+    initialModelLoadState.loaded = 0
     notifyInitialModelLoadProgress()
+
+    void (async () => {
+      for (const visual of initialLoadQueue) {
+        if (!visualsById.has(visual.id)) return
+        await loadModelIntoVisual(visual, true)
+      }
+      for (const visual of backgroundLoadQueue) {
+        if (!visualsById.has(visual.id)) continue
+        void loadModelIntoVisual(visual, false)
+      }
+      notifyInitialModelLoadProgress()
+    })()
 
     const moveState = { KeyW: false, KeyA: false, KeyS: false, KeyD: false }
     const moveSpeed = 4
